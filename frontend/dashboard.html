@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Phishing Detection AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+        <div class="container">
+            <h1>🛡️ Phishing Detection Dashboard</h1>
+            <p>AI-powered email security analysis</p>
+            <div class="user-info">
+                <span id="userEmail">Loading...</span>
+                <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Dashboard Main Content -->
+    <main class="dashboard-main">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📧</div>
+                <h4>Emails Analyzed</h4>
+                <div class="stat-value" id="emailsAnalyzed">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🛡️</div>
+                <h4>Threats Blocked</h4>
+                <div class="stat-value" id="threatsBlocked">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <h4>Avg Response Time</h4>
+                <div class="stat-value" id="avgResponseTime">0.2s</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <h4>Accuracy Rate</h4>
+                <div class="stat-value" id="accuracyRate">98.5%</div>
+            </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="chart-container">
+            <h3>Risk Distribution</h3>
+            <div style="position: relative; height: 300px;">
+                <canvas id="riskChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Email Analysis Panel -->
+            <div class="panel analyze-section">
+                <h2>Email Analysis</h2>
+                <div class="analyze-form">
+                    <textarea 
+                        id="rawEmail" 
+                        placeholder="Paste your email content here for analysis..."
+                        rows="8"
+                    ></textarea>
+                    <button id="runAnalyze" class="analyze-btn">
+                        Analyze Email
+                    </button>
+                    <button id="demoBtn" class="btn-secondary">
+                        Try Demo Email
+                    </button>
+                </div>
+                
+                <div id="result" class="result-section" style="display: none;">
+                    <!-- Results will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Analysis History Panel -->
+            <div class="panel">
+                <h2>Analysis History</h2>
+                <ul id="history" class="history-list">
+                    <!-- History items will be populated here -->
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="firebase-config.js"></script>
+    <script src="auth.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>
