@@ -127,6 +127,17 @@ async function analyzeEmail() {
 
         const data = await response.json();
         
+        // Update user's emails analyzed count
+        if (firebase.auth().currentUser) {
+            try {
+                await fetch(`http://localhost:3000/api/users/${firebase.auth().currentUser.uid}/emails-analyzed`, {
+                    method: 'PUT'
+                });
+            } catch (error) {
+                console.error('Error updating emails analyzed count:', error);
+            }
+        }
+        
         // Display results
         displayResults(data);
         

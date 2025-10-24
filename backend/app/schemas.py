@@ -26,3 +26,24 @@ class EmailRecord(BaseModel):
     
     class Config:
         validate_by_name = True
+
+class UserCreateRequest(BaseModel):
+    uid: str = Field(..., description="Firebase user ID")
+    email: str = Field(..., description="User email")
+    displayName: Optional[str] = Field(None, description="User display name")
+    photoURL: Optional[str] = Field(None, description="User photo URL")
+    provider: str = Field(..., description="Authentication provider")
+    createdAt: str = Field(..., description="Account creation timestamp")
+
+class UserResponse(BaseModel):
+    uid: str
+    email: str
+    displayName: Optional[str] = None
+    photoURL: Optional[str] = None
+    provider: str
+    createdAt: datetime
+    emailsAnalyzed: int = 0
+    lastLogin: Optional[datetime] = None
+
+    class Config:
+        validate_by_name = True

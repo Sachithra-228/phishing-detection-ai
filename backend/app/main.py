@@ -1,7 +1,7 @@
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from app.schemas import AnalyzeRequest, AnalyzeResponse, EmailRecord
+from app.schemas import AnalyzeRequest, AnalyzeResponse, EmailRecord, UserCreateRequest, UserResponse
 from app.db import get_db
 from app.agents.email_parser import parse_email
 from app.agents.risk_scorer import score
@@ -187,3 +187,82 @@ async def get_stats(db=Depends(get_db)):
     except Exception as e:
         logger.error(f"Failed to get stats: {e}")
         raise HTTPException(status_code=500, detail="Failed to get statistics")
+
+@app.post("/api/users", response_model=UserResponse)
+async def create_user(user_data: UserCreateRequest, db=Depends(get_db)):
+    """Create or update user in MongoDB"""
+    try:
+        users_collection = db["users"]
+        
+        # Check if user already exists
+        existing_user = await users_collection.find_one({"uid": user_data.uid})
+        
+        if existing_user:
+            # Update last login
+            await users_collection.update_one(
+                {"uid": user_data.uid},
+                {"$set": {"lastLogin": datetime.utcnow()}}
+            )
+            existing_user["lastLogin"] = datetime.utcnow()
+            return UserResponse(**existing_user)
+        
+        # Create new user
+        user_doc = {
+            "uid": user_data.uid,
+            "email": user_data.email,
+            "displayName": user_data.displayName,
+            "photoURL": user_data.photoURL,
+            "provider": user_data.provider,
+            "createdAt": datetime.fromisoformat(user_data.createdAt.replace('Z', '+00:00')),
+            "emailsAnalyzed": 0,
+            "lastLogin": datetime.utcnow()
+        }
+        
+        result = await users_collection.insert_one(user_doc)
+        user_doc["_id"] = str(result.inserted_id)
+        
+        return UserResponse(**user_doc)
+        
+    except Exception as e:
+        logger.error(f"Error creating user: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create user")
+
+@app.get("/api/users/{uid}", response_model=UserResponse)
+async def get_user(uid: str, db=Depends(get_db)):
+    """Get user by UID"""
+    try:
+        users_collection = db["users"]
+        user = await users_collection.find_one({"uid": uid})
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return UserResponse(**user)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting user: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get user")
+
+@app.put("/api/users/{uid}/emails-analyzed")
+async def update_emails_analyzed(uid: str, db=Depends(get_db)):
+    """Increment emails analyzed count for user"""
+    try:
+        users_collection = db["users"]
+        
+        result = await users_collection.update_one(
+            {"uid": uid},
+            {"$inc": {"emailsAnalyzed": 1}}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        return {"success": True, "message": "Emails analyzed count updated"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating emails analyzed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to update emails analyzed count")
