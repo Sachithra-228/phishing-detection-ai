@@ -11,41 +11,406 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <style>
         body {
-            background: white;
             margin: 0;
             padding: 0;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .auth-page {
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 2rem;
         }
         
         .auth-container {
             background: white;
             width: 100%;
-            max-width: 400px;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
+            max-width: 1200px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 600px;
         }
         
-        .auth-header {
+        .auth-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .auth-info::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        .auth-info-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        .auth-logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .auth-hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .auth-hero-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+        
+        .auth-features {
+            margin-bottom: 3rem;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        
+        .feature-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+            min-width: 60px;
+        }
+        
+        .feature-content h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .feature-content p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+        
+        .auth-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 2rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ffd700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 0.25rem;
+        }
+        
+        .auth-form-section {
+            padding: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .auth-form-container {
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .auth-form-header {
             text-align: center;
             margin-bottom: 2rem;
         }
         
-        .auth-logo {
+        .auth-form-header h2 {
             font-size: 2rem;
             font-weight: 700;
             color: #374151;
             margin-bottom: 0.5rem;
         }
         
-        .auth-subtitle {
+        .auth-form-header p {
             color: #6b7280;
             font-size: 1rem;
+        }
+        
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-group label {
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+        
+        .form-group input {
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: -0.5rem 0;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #6b7280;
+            cursor: pointer;
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+        }
+        
+        .auth-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .auth-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .auth-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .auth-divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        
+        .auth-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e5e7eb;
+        }
+        
+        .auth-divider span {
+            background: white;
+            padding: 0 1rem;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .google-button {
+            width: 100%;
+            background: white;
+            border: 2px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            color: #374151;
+        }
+        
+        .google-button:hover {
+            border-color: #d1d5db;
+            background: #f9fafb;
+            transform: translateY(-1px);
+        }
+        
+        .google-icon {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .auth-switch {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #6b7280;
+        }
+        
+        .auth-switch a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+        
+        .auth-footer {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .back-link {
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #374151;
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #fecaca;
+            display: none;
+        }
+        
+        .success-message {
+            background: #f0fdf4;
+            color: #16a34a;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #bbf7d0;
+            display: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .auth-container {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+                margin: 1rem;
+            }
+            
+            .auth-info {
+                padding: 2rem;
+                min-height: 300px;
+            }
+            
+            .auth-hero h1 {
+                font-size: 2rem;
+            }
+            
+            .auth-hero-subtitle {
+                font-size: 1rem;
+            }
+            
+            .auth-features {
+                margin-bottom: 2rem;
+            }
+            
+            .feature-item {
+                margin-bottom: 1rem;
+            }
+            
+            .auth-stats {
+                margin-top: 1rem;
+            }
+            
+            .auth-form-section {
+                padding: 2rem;
+            }
         }
         
         .auth-form {
@@ -237,84 +602,134 @@
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-link">
-        ← Back to Home
-    </a>
-    
-    <div class="auth-container">
-        <div class="auth-header">
-            <div class="auth-logo">🛡️ Phishing Detection AI</div>
-            <div class="auth-subtitle">Create your account</div>
+    <div class="auth-page">
+      <div class="auth-container">
+        <!-- Left Side - Information -->
+        <div class="auth-info">
+          <div class="auth-info-content">
+            <div class="auth-logo">
+              <h2>🛡️ Phishing Detection AI</h2>
+            </div>
+            
+            <div class="auth-hero">
+              <h1>Join the Future!</h1>
+              <p class="auth-hero-subtitle">Start protecting your digital life with AI-powered security today</p>
+            </div>
+            
+            <div class="auth-features">
+              <div class="feature-item">
+                <div class="feature-icon">🛡️</div>
+                <div class="feature-content">
+                  <h3>Advanced Protection</h3>
+                  <p>AI-powered email analysis detects threats before they reach you</p>
+                </div>
+              </div>
+              
+              <div class="feature-item">
+                <div class="feature-icon">📈</div>
+                <div class="feature-content">
+                  <h3>Real-time Monitoring</h3>
+                  <p>Continuous scanning and instant threat detection</p>
+                </div>
+              </div>
+              
+              <div class="feature-item">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-content">
+                  <h3>Smart Insights</h3>
+                  <p>Detailed analytics and personalized security recommendations</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="auth-stats">
+              <div class="stat-item">
+                <div class="stat-number">99.7%</div>
+                <div class="stat-label">Accuracy Rate</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number">1M+</div>
+                <div class="stat-label">Emails Protected</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number">50K+</div>
+                <div class="stat-label">Happy Users</div>
+              </div>
+            </div>
+          </div>
         </div>
         
-        <div id="errorMessage" class="error-message"></div>
-        <div id="successMessage" class="success-message"></div>
-        
-        <form class="auth-form" id="signUpForm">
-            <div class="form-group">
-                <label for="email" class="form-label">Email</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    class="form-input" 
-                    placeholder="Enter your email"
-                    required
-                >
+        <!-- Right Side - Form -->
+        <div class="auth-form-section">
+          <div class="auth-form-container">
+            <div class="auth-form-header">
+              <h2>Create Account</h2>
+              <p>Start your free trial today</p>
             </div>
             
-            <div class="form-group">
-                <label for="password" class="form-label">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    class="form-input" 
-                    placeholder="Create a password"
-                    required
-                    minlength="6"
-                >
-            </div>
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
             
-            <div class="form-group">
-                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                <input 
-                    type="password" 
-                    id="confirmPassword" 
-                    class="form-input" 
-                    placeholder="Confirm your password"
-                    required
-                >
+            <form class="auth-form" id="signUpForm">
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required minlength="6">
+              </div>
+              
+              <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
                 <div id="passwordMatch" class="password-match" style="display: none;">
-                    ✓ Passwords match
+                  ✓ Passwords match
                 </div>
                 <div id="passwordMismatch" class="password-mismatch" style="display: none;">
-                    ✗ Passwords do not match
+                  ✗ Passwords do not match
                 </div>
+              </div>
+              
+              <div class="form-options">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="agreeTerms" required>
+                  <span class="checkmark"></span>
+                  I agree to the <a href="#" style="color: #667eea;">Terms of Service</a>
+                </label>
+              </div>
+              
+              <button type="submit" class="auth-button" id="signUpBtn">
+                <span id="signUpText">Create Account</span>
+                <span id="signUpLoading" class="loading" style="display: none;"></span>
+              </button>
+            </form>
+            
+            <div class="auth-divider">
+              <span>or</span>
             </div>
             
-            <button type="submit" class="auth-button" id="signUpBtn">
-                <span id="signUpText">Sign Up</span>
-                <span id="signUpLoading" class="loading" style="display: none;"></span>
-            </button>
-        </form>
-        
-        <div class="auth-divider">
-            <span>or</span>
-        </div>
-        
-        <button class="google-button" id="googleSignUpBtn">
-            <svg class="google-icon" viewBox="0 0 24 24">
+            <button class="google-button" id="googleSignUpBtn">
+              <svg class="google-icon" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Continue with Google
-        </button>
-        
-        <div class="auth-footer">
-            Already have an account? 
-            <a href="sign-in.html" class="auth-link">Sign In</a>
+              </svg>
+              Continue with Google
+            </button>
+            
+            <div class="auth-switch">
+              <p>Already have an account? <a href="sign-in.html">Sign in</a></p>
+            </div>
+            
+            <div class="auth-footer">
+              <a href="./" class="back-link">← Back to Home</a>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <script src="firebase-config.js"></script>

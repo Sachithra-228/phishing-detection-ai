@@ -48,7 +48,7 @@
           </p>
           <div class="hero-actions">
             <a href="sign-up.html" class="btn-primary btn-large">Start Free Trial</a>
-            <a href="#demo" class="btn-secondary btn-large">Watch Demo</a>
+            <a href="demo.html" class="btn-secondary btn-large">Watch Demo</a>
           </div>
           <div class="hero-stats">
             <div class="stat">
@@ -73,17 +73,25 @@
               </div>
             </div>
             <div class="preview-content">
-              <div class="preview-chart">
-                <canvas id="previewChart" width="200" height="200"></canvas>
+              <div class="preview-chart-container">
+                <canvas id="interactivePieChart" width="300" height="300"></canvas>
+                <div class="chart-center-info">
+                  <div class="center-number" id="centerNumber">847</div>
+                  <div class="center-label">Emails</div>
+                </div>
               </div>
               <div class="preview-stats">
                 <div class="preview-stat">
-                  <span class="preview-stat-number">847</span>
+                  <span class="preview-stat-number" id="emailsCount">0</span>
                   <span class="preview-stat-label">Emails Scanned</span>
                 </div>
                 <div class="preview-stat">
-                  <span class="preview-stat-number">23</span>
+                  <span class="preview-stat-number" id="threatsCount">0</span>
                   <span class="preview-stat-label">Threats Blocked</span>
+                </div>
+                <div class="preview-stat">
+                  <span class="preview-stat-number" id="safeCount">0</span>
+                  <span class="preview-stat-label">Safe Emails</span>
                 </div>
               </div>
             </div>
@@ -277,5 +285,238 @@
   <script src="firebase-config.js"></script>
   <script src="auth.js"></script>
   <script src="app.js"></script>
+  
+  <script>
+    // Modern 3D Interactive Pie Chart
+    document.addEventListener('DOMContentLoaded', function() {
+      initInteractivePieChart();
+      animateCounters();
+    });
+
+    let interactiveChart = null;
+    let hoveredSegment = null;
+
+    function initInteractivePieChart() {
+      const ctx = document.getElementById('interactivePieChart').getContext('2d');
+      
+      interactiveChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Safe Emails', 'Threats Blocked', 'Pending Analysis'],
+          datasets: [{
+            data: [824, 23, 0], // 824 safe, 23 threats, 0 pending
+            backgroundColor: [
+              '#4CAF50', // Green for safe emails
+              '#FF5722', // Red for threats
+              '#FFC107'  // Yellow for pending
+            ],
+            borderColor: [
+              '#2E7D32',
+              '#D32F2F', 
+              '#F57F17'
+            ],
+            borderWidth: 3,
+            hoverBackgroundColor: [
+              '#66BB6A',
+              '#FF7043',
+              '#FFD54F'
+            ],
+            hoverBorderWidth: 5,
+            hoverOffset: 15
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            animateRotate: true,
+            animateScale: true,
+            duration: 2000,
+            easing: 'easeInOutQuart',
+            onComplete: function() {
+              addChartInteractions();
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              enabled: true,
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: '#667eea',
+              borderWidth: 2,
+              cornerRadius: 8,
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return `${label}: ${value} (${percentage}%)`;
+                }
+              }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          onHover: function(event, elements) {
+            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+          },
+          onClick: function(event, elements) {
+            if (elements.length > 0) {
+              const index = elements[0].index;
+              const data = interactiveChart.data.datasets[0].data[index];
+              const label = interactiveChart.data.labels[index];
+              
+              // Animate the clicked segment
+              animateSegmentClick(index, data, label);
+            }
+          }
+        }
+      });
+    }
+
+    function addChartInteractions() {
+      const canvas = document.getElementById('interactivePieChart');
+      
+      // Add continuous rotation animation
+      canvas.style.animation = 'slowRotate 20s linear infinite';
+      
+      // Add hover effects
+      canvas.addEventListener('mouseenter', function() {
+        canvas.style.animationPlayState = 'paused';
+        canvas.style.transform = 'scale(1.05)';
+        canvas.style.transition = 'transform 0.3s ease';
+      });
+      
+      canvas.addEventListener('mouseleave', function() {
+        canvas.style.animationPlayState = 'running';
+        canvas.style.transform = 'scale(1)';
+      });
+    }
+
+    function animateSegmentClick(index, data, label) {
+      // Create a ripple effect
+      const canvas = document.getElementById('interactivePieChart');
+      const rect = canvas.getBoundingClientRect();
+      
+      // Update center number with animation
+      const centerNumber = document.getElementById('centerNumber');
+      centerNumber.style.transform = 'scale(1.2)';
+      centerNumber.textContent = data;
+      
+      setTimeout(() => {
+        centerNumber.style.transform = 'scale(1)';
+      }, 300);
+      
+      // Show a brief highlight effect
+      canvas.style.filter = 'brightness(1.2) drop-shadow(0 0 20px rgba(102, 126, 234, 0.5))';
+      setTimeout(() => {
+        canvas.style.filter = 'none';
+      }, 500);
+    }
+
+    function animateCounters() {
+      // Animate all counters
+      animateCounter('emailsCount', 0, 847, 2000);
+      setTimeout(() => {
+        animateCounter('threatsCount', 0, 23, 1500);
+      }, 500);
+      setTimeout(() => {
+        animateCounter('safeCount', 0, 824, 1500);
+      }, 1000);
+    }
+
+    function animateCounter(elementId, start, end, duration) {
+      const element = document.getElementById(elementId);
+      const range = end - start;
+      const increment = range / (duration / 16);
+      let current = start;
+
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= end) {
+          current = end;
+          clearInterval(timer);
+        }
+        element.textContent = Math.floor(current);
+      }, 16);
+    }
+
+    // Add CSS animations and styles
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slowRotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+      
+      .preview-chart-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+      
+      .chart-center-info {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        pointer-events: none;
+      }
+      
+      .center-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #ffd700;
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        transition: all 0.3s ease;
+      }
+      
+      .center-label {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 0.25rem;
+      }
+      
+      .preview-stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #ffd700;
+        display: block;
+        transition: all 0.3s ease;
+      }
+      
+      .preview-stat-number:hover {
+        transform: scale(1.1);
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      }
+      
+      #interactivePieChart {
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      
+      #interactivePieChart:hover {
+        filter: brightness(1.1);
+      }
+    `;
+    document.head.appendChild(style);
+    </script>
 </body>
 </html>

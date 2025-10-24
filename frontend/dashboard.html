@@ -23,6 +23,42 @@
             </div>
         </div>
     </header>
+
+    <!-- Quick Email Check Section -->
+    <section class="quick-check-section">
+        <div class="container">
+            <div class="quick-check-card">
+                <div class="quick-check-header">
+                    <div class="quick-check-icon">⚡</div>
+                    <h2>Quick Email Check</h2>
+                    <p>Instantly analyze any email for phishing threats</p>
+                </div>
+                <div class="quick-check-form">
+                    <div class="input-group">
+                        <input type="text" id="quickEmailUrl" placeholder="Paste email URL or content here..." class="quick-input">
+                        <button id="quickCheckBtn" class="quick-check-btn">
+                            <span class="btn-icon">🔍</span>
+                            <span class="btn-text">Quick Check</span>
+                        </button>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" data-action="gmail">
+                            <span class="action-icon">📧</span>
+                            <span>Gmail</span>
+                        </button>
+                        <button class="quick-action-btn" data-action="outlook">
+                            <span class="action-icon">📮</span>
+                            <span>Outlook</span>
+                        </button>
+                        <button class="quick-action-btn" data-action="yahoo">
+                            <span class="action-icon">📨</span>
+                            <span>Yahoo</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     
     <!-- Dashboard Main Content -->
     <main class="dashboard-main">
@@ -50,6 +86,153 @@
             </div>
         </div>
 
+        <!-- AI Agents Section -->
+        <div class="agents-section">
+            <h2 class="section-title">🤖 AI Agents Overview</h2>
+            <p class="section-subtitle">Our three specialized AI agents work together to protect your digital life</p>
+            
+            <div class="agents-grid">
+                <!-- Email Parser Agent -->
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-icon">📧</div>
+                        <h3>Email Parser Agent</h3>
+                        <span class="agent-role">The "Reader"</span>
+                    </div>
+                    <div class="agent-content">
+                        <p class="agent-description">
+                            Takes raw email content and extracts useful details for analysis.
+                        </p>
+                        <div class="agent-jobs">
+                            <h4>Main Jobs:</h4>
+                            <ul>
+                                <li>Parse headers (From, To, Subject)</li>
+                                <li>Extract URLs, attachments, and body text</li>
+                                <li>Detect named entities (person, org, dates, etc.)</li>
+                                <li>Store structured info in MongoDB</li>
+                                <li>Send cleaned data to Risk Scorer Agent</li>
+                            </ul>
+                        </div>
+                        <div class="agent-tech">
+                            <h4>Tech Used:</h4>
+                            <div class="tech-tags">
+                                <span class="tech-tag">NLP (spaCy)</span>
+                                <span class="tech-tag">IR (Vector Search)</span>
+                                <span class="tech-tag">LLM (Ollama LLaMA3)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Scorer Agent -->
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-icon">🎯</div>
+                        <h3>Risk Scorer Agent</h3>
+                        <span class="agent-role">The "Analyzer"</span>
+                    </div>
+                    <div class="agent-content">
+                        <p class="agent-description">
+                            Receives structured data and predicts how risky the email is.
+                        </p>
+                        <div class="agent-jobs">
+                            <h4>Main Jobs:</h4>
+                            <ul>
+                                <li>Analyze sender reputation</li>
+                                <li>Check links and attachments</li>
+                                <li>Detect phishing keywords</li>
+                                <li>Compare content embeddings</li>
+                                <li>Combine IR + LLM reasoning</li>
+                                <li>Output risk score (0-100) and reasoning</li>
+                            </ul>
+                        </div>
+                        <div class="agent-example">
+                            <h4>Example Output:</h4>
+                            <div class="example-box">
+                                <strong>87% phishing risk</strong> — suspicious domain 'paypa1.com' detected and urgent tone in message.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Generator Agent -->
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-icon">🚨</div>
+                        <h3>Alert Generator Agent</h3>
+                        <span class="agent-role">The "Communicator"</span>
+                    </div>
+                    <div class="agent-content">
+                        <p class="agent-description">
+                            Explains and reports what happened in human-friendly terms.
+                        </p>
+                        <div class="agent-jobs">
+                            <h4>Main Jobs:</h4>
+                            <ul>
+                                <li>Receive risk score + reasoning</li>
+                                <li>Generate human-friendly alerts</li>
+                                <li>Store alerts in database</li>
+                                <li>Show notifications on dashboard</li>
+                                <li>Send alerts via email/Slack/Teams</li>
+                            </ul>
+                        </div>
+                        <div class="agent-example">
+                            <h4>Example Alert:</h4>
+                            <div class="example-box">
+                                "This email may be a phishing attempt impersonating your bank. It includes a fake login link and asks for credentials."
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Flow Section -->
+            <div class="data-flow-section">
+                <h3>🔄 How It All Works Together</h3>
+                <div class="flow-steps">
+                    <div class="flow-step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>User Input</h4>
+                            <p>User inputs email or connects Gmail</p>
+                        </div>
+                    </div>
+                    <div class="flow-arrow">➡</div>
+                    <div class="flow-step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Email Parser</h4>
+                            <p>Parses + extracts features</p>
+                        </div>
+                    </div>
+                    <div class="flow-arrow">➡</div>
+                    <div class="flow-step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Risk Scorer</h4>
+                            <p>Evaluates + assigns score</p>
+                        </div>
+                    </div>
+                    <div class="flow-arrow">➡</div>
+                    <div class="flow-step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Alert Generator</h4>
+                            <p>Summarizes + sends alert</p>
+                        </div>
+                    </div>
+                    <div class="flow-arrow">➡</div>
+                    <div class="flow-step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>Dashboard</h4>
+                            <p>Displays results to user</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Chart Container -->
         <div class="chart-container">
             <h3>Risk Distribution</h3>
@@ -62,19 +245,49 @@
         <div class="dashboard-grid">
             <!-- Email Analysis Panel -->
             <div class="panel analyze-section">
-                <h2>Email Analysis</h2>
+                <div class="analyze-header">
+                    <div class="analyze-icon">📧</div>
+                    <div class="analyze-title">
+                        <h2>Advanced Email Analysis</h2>
+                        <p>Deep dive analysis with AI-powered threat detection</p>
+                    </div>
+                </div>
+                
                 <div class="analyze-form">
-                    <textarea 
-                        id="rawEmail" 
-                        placeholder="Paste your email content here for analysis..."
-                        rows="8"
-                    ></textarea>
-                    <button id="runAnalyze" class="analyze-btn">
-                        Analyze Email
-                    </button>
-                    <button id="demoBtn" class="btn-secondary">
-                        Try Demo Email
-                    </button>
+                    <div class="email-input-container">
+                        <div class="input-label">
+                            <span class="label-icon">📝</span>
+                            <span>Email Content</span>
+                        </div>
+                        <textarea 
+                            id="rawEmail" 
+                            placeholder="Paste your email content here for comprehensive analysis..."
+                            rows="8"
+                            class="email-textarea"
+                        ></textarea>
+                        <div class="input-footer">
+                            <span class="char-count">0 characters</span>
+                            <span class="analysis-tip">💡 Tip: Include headers for better analysis</span>
+                        </div>
+                    </div>
+                    
+                    <div class="analyze-actions">
+                        <button id="runAnalyze" class="analyze-btn primary">
+                            <span class="btn-icon">🛡️</span>
+                            <span class="btn-text">Analyze Email</span>
+                            <div class="btn-loading" style="display: none;">
+                                <div class="spinner"></div>
+                            </div>
+                        </button>
+                        <button id="demoBtn" class="analyze-btn secondary">
+                            <span class="btn-icon">🎯</span>
+                            <span class="btn-text">Try Demo Email</span>
+                        </button>
+                        <button id="clearBtn" class="analyze-btn clear">
+                            <span class="btn-icon">🗑️</span>
+                            <span class="btn-text">Clear</span>
+                        </button>
+                    </div>
                 </div>
                 
                 <div id="result" class="result-section" style="display: none;">
@@ -83,11 +296,66 @@
             </div>
 
             <!-- Analysis History Panel -->
-            <div class="panel">
-                <h2>Analysis History</h2>
-                <ul id="history" class="history-list">
-                    <!-- History items will be populated here -->
-                </ul>
+            <div class="panel history-panel">
+                <div class="history-header">
+                    <h2>📊 Analysis History</h2>
+                    <div class="history-controls">
+                        <div class="filter-group">
+                            <select id="riskFilter" class="filter-select">
+                                <option value="all">All Risk Levels</option>
+                                <option value="high">High Risk Only</option>
+                                <option value="medium">Medium Risk Only</option>
+                                <option value="low">Low Risk Only</option>
+                            </select>
+                            <select id="dateFilter" class="filter-select">
+                                <option value="all">All Time</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                            </select>
+                        </div>
+                        <div class="history-actions">
+                            <button id="clearHistoryBtn" class="action-btn danger">
+                                <span class="btn-icon">🗑️</span>
+                                Clear All
+                            </button>
+                            <button id="exportHistoryBtn" class="action-btn secondary">
+                                <span class="btn-icon">📤</span>
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="history-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalAnalyses">0</span>
+                        <span class="stat-label">Total</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="highRiskCount">0</span>
+                        <span class="stat-label">High Risk</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="mediumRiskCount">0</span>
+                        <span class="stat-label">Medium Risk</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="lowRiskCount">0</span>
+                        <span class="stat-label">Low Risk</span>
+                    </div>
+                </div>
+                
+                <div class="history-content">
+                    <div id="historyList" class="history-list">
+                        <!-- History items will be populated here -->
+                    </div>
+                    <div id="noHistoryMessage" class="no-history" style="display: none;">
+                        <div class="no-history-icon">📭</div>
+                        <h3>No Analysis History</h3>
+                        <p>Start analyzing emails to see your history here</p>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
