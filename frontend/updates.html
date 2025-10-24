@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Threat Updates - Phishing Detection AI</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html">
+                    <span class="logo-icon">🛡️</span>
+                    <span class="logo-text">Phishing Detection AI</span>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="sign-in.html" class="nav-link">Sign In</a>
+                <a href="sign-up.html" class="nav-link nav-cta">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="header-icon">📰</div>
+                <div class="header-text">
+                    <h1>Global Threat Updates</h1>
+                    <p>Stay informed with the latest phishing and cybersecurity threats from trusted sources worldwide</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="updates-main">
+        <div class="container">
+            <!-- Global Threat Updates Section -->
+            <section id="threats" class="panel">
+                <div class="th-header">
+                    <h2>Latest Threat Intelligence</h2>
+                    <p class="muted">Fresh alerts on phishing & email-borne threats from trusted sources.</p>
+                    <div class="th-controls">
+                        <input id="thSearch" placeholder="Search (e.g., paypal, invoice, MFA)"/>
+                        <select id="thSource"><option value="">All sources</option></select>
+                        <button id="thRefresh">Refresh</button>
+                    </div>
+                </div>
+                <div id="threatGrid" class="th-grid"></div>
+            </section>
+
+            <!-- Additional Info Section -->
+            <section class="info-section">
+                <div class="info-grid">
+                    <div class="info-card">
+                        <div class="info-icon">🔄</div>
+                        <h3>Auto-Refresh</h3>
+                        <p>Updates automatically refresh every 15 minutes to keep you informed of the latest threats.</p>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">🔍</div>
+                        <h3>Smart Filtering</h3>
+                        <p>Search by keywords or filter by source to find relevant threat information quickly.</p>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon">🛡️</div>
+                        <h3>Trusted Sources</h3>
+                        <p>Information sourced from CISA, NCSC, Krebs on Security, and other authoritative cybersecurity organizations.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🛡️ Phishing Detection AI</h3>
+                    <p>Protecting your digital life with advanced AI technology.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="index.html#features">Features</a></li>
+                        <li><a href="index.html#pricing">Pricing</a></li>
+                        <li><a href="demo.html">Demo</a></li>
+                        <li><a href="updates.html">Threat Updates</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="index.html#how-it-works">How It Works</a></li>
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Phishing Detection AI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="updates.js"></script>
+</body>
+</html>

@@ -1576,9 +1576,96 @@ body {
   }
 }
 
+/* Updates Page Styles */
+.page-header {
+  background: linear-gradient(135deg, #0f274f 0%, #091a36 100%);
+  padding: 4rem 0 2rem;
+  color: white;
+  text-align: center;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header-icon {
+  font-size: 3rem;
+  opacity: 0.9;
+}
+
+.header-text h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #ffffff 0%, #ffcf9f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-text p {
+  font-size: 1.2rem;
+  opacity: 0.8;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.updates-main {
+  padding: 2rem 0 4rem;
+  background: #f8f9fa;
+  min-height: 60vh;
+}
+
+.info-section {
+  margin-top: 3rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.info-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-4px);
+}
+
+.info-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.info-card h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 1rem 0;
+}
+
+.info-card p {
+  color: #718096;
+  line-height: 1.6;
+  margin: 0;
+}
+
 /* Global Threat Updates Styles */
 #threats { 
-  margin-top: 16px; 
+  margin-top: 0; 
   background: linear-gradient(135deg, #0f274f 0%, #091a36 100%);
   border: 1px solid #163a74;
   border-radius: 16px;
@@ -1654,6 +1741,25 @@ body {
   .th-grid { 
     grid-template-columns: 1fr; 
   } 
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .header-text h1 {
+    font-size: 2rem;
+  }
+  
+  .header-text p {
+    font-size: 1rem;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 }
 
 .th-card {
