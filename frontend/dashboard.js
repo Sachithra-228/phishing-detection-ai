@@ -1,6 +1,7 @@
 // Dashboard-specific JavaScript
 let riskChart = null;
 const API_BASE = 'http://localhost:3000';
+let dashboardInitialized = false;
 
 // Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -9,11 +10,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if user is authenticated
     if (typeof firebase !== 'undefined' && firebase.auth) {
         firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
+            if (user && !dashboardInitialized) {
                 console.log('User authenticated:', user.email);
+                dashboardInitialized = true; // Prevent multiple initializations
                 updateUserInfo(user);
                 initializeDashboard();
-            } else {
+            } else if (!user) {
                 console.log('No user authenticated, redirecting to landing page');
                 window.location.href = 'index.html';
             }
@@ -37,6 +39,9 @@ function updateUserInfo(user) {
 function initializeDashboard() {
     console.log('Initializing dashboard...');
     
+    // Show loading state initially
+    showDashboardLoading();
+    
     // Initialize charts
     initializeCharts();
     
@@ -48,6 +53,26 @@ function initializeDashboard() {
     
     // Set up event listeners
     setupEventListeners();
+    
+    // Hide loading state after a short delay
+    setTimeout(() => {
+        hideDashboardLoading();
+    }, 1000);
+}
+
+function showDashboardLoading() {
+    const dashboard = document.getElementById('dashboard');
+    if (dashboard) {
+        dashboard.style.opacity = '0.7';
+        dashboard.style.transition = 'opacity 0.3s ease';
+    }
+}
+
+function hideDashboardLoading() {
+    const dashboard = document.getElementById('dashboard');
+    if (dashboard) {
+        dashboard.style.opacity = '1';
+    }
 }
 
 function setupEventListeners() {

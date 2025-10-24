@@ -986,3 +986,22 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* Dashboard Stability - Prevent Flickering */
+#dashboard {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.dashboard-loading {
+  opacity: 0.7;
+}
+
+.dashboard-main {
+  min-height: 100vh;
+}
+
+.stats-grid, .chart-container, .dashboard-grid {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
