@@ -221,13 +221,13 @@ class RiskScorer:
         
         # Determine risk level and reason
         if final_score >= 0.8:
-        level = "High"
+            level = "High"
             reason = "Multiple indicators suggest this is likely phishing"
         elif final_score >= 0.4:
-        level = "Medium"
+            level = "Medium"
             reason = "Some indicators suggest potential phishing risk"
-    else:
-        level = "Low"
+        else:
+            level = "Low"
             reason = "Few or no indicators of phishing detected"
         
         # Add specific reasons
