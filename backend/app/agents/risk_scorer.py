@@ -90,7 +90,7 @@ class RiskScorer:
         body_text = parsed.get("body_text", "").lower()
         full_text = f"{subject} {body_text}"
         
-        urls = parsed.get("urls", [])
+    urls = parsed.get("urls", [])
         entities = parsed.get("entities", [])
         
         # Keyword-based features
@@ -221,13 +221,13 @@ class RiskScorer:
         
         # Determine risk level and reason
         if final_score >= 0.8:
-            level = "High"
+        level = "High"
             reason = "Multiple indicators suggest this is likely phishing"
         elif final_score >= 0.4:
-            level = "Medium"
+        level = "Medium"
             reason = "Some indicators suggest potential phishing risk"
-        else:
-            level = "Low"
+    else:
+        level = "Low"
             reason = "Few or no indicators of phishing detected"
         
         # Add specific reasons
