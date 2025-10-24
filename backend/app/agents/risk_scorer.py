@@ -91,7 +91,7 @@ class RiskScorer:
         full_text = f"{subject} {body_text}"
         
     urls = parsed.get("urls", [])
-        entities = parsed.get("entities", [])
+    entities = parsed.get("entities", [])
         
         # Keyword-based features
         features['suspicious_keyword_count'] = sum(1 for kw in SUSPICIOUS_KEYWORDS if kw in full_text)
