@@ -10,12 +10,47 @@ from cachetools import TTLCache
 router = APIRouter()
 _CACHE = TTLCache(maxsize=4, ttl=int(getenv("NEWS_CACHE_TTL_SECONDS", "900")))
 _DEFAULTS = [
+    # Government & Official Sources
     "https://www.cisa.gov/news-events/cybersecurity-advisories/rss.xml",
     "https://www.ncsc.gov.uk/api/1/services/v1/news-rss-feed.xml",
+    
+    # Security Research & Analysis
     "https://krebsonsecurity.com/feed/",
+    "https://feeds.feedburner.com/TheHackersNews",
+    "https://feeds.trendmicro.com/TrendMicroResearch",
+    "https://nakedsecurity.sophos.com/feed/",
+    "https://blog.talosintelligence.com/feeds/posts/default",
+    
+    # Enterprise Security
+    "https://www.proofpoint.com/us/rss-feeds/blog",
+    "https://www.fortinet.com/rss/feeds",
+    "https://blog.barracuda.com/feed/",
+    "https://abnormalsecurity.com/feed.xml",
+    
+    # Anti-Phishing Organizations
+    "https://apwg.org/feed/",
+    "https://www.spamhaus.org/news/rss",
+    
+    # Additional Security Sources
+    "https://feeds.feedburner.com/bleepingcomputer",
+    "https://www.darkreading.com/rss.xml",
+    "https://www.securityweek.com/rss",
+    "https://feeds.feedburner.com/eset/blog",
+    "https://www.theregister.com/security/headlines.atom",
+    "https://feeds.feedburner.com/SecurityIntelligence",
 ]
 
-KEYWORDS = ["phishing", "scam", "spoof", "credential", "malware", "ransomware", "invoice", "paypal", "bank", "business email compromise", "bec"]
+KEYWORDS = [
+    "phishing", "scam", "spoof", "credential", "malware", "ransomware", 
+    "invoice", "paypal", "bank", "business email compromise", "bec",
+    "social engineering", "vishing", "smishing", "spear phishing",
+    "zero-day", "exploit", "vulnerability", "breach", "data leak",
+    "cryptocurrency", "defi", "nft", "crypto", "bitcoin",
+    "supply chain", "apt", "nation-state", "cyber attack",
+    "ddos", "botnet", "trojan", "virus", "worm", "rootkit",
+    "identity theft", "fraud", "financial crime", "money laundering",
+    "dark web", "underground", "hacker", "cybercriminal"
+]
 
 def _tags(text: str) -> List[str]:
     """Extract relevant tags from text based on keywords."""
@@ -24,22 +59,26 @@ def _tags(text: str) -> List[str]:
     return hits or ["phishing"]
 
 async def _fetch(client: httpx.AsyncClient, url: str) -> List[Dict[str, Any]]:
-    """Fetch and parse a single RSS feed."""
+    """Fetch and parse a single RSS/Atom feed."""
     try:
-        r = await client.get(url, timeout=10)
+        r = await client.get(url, timeout=15, headers={"User-Agent": "PhishingDetectionAI/1.0"})
         r.raise_for_status()
         parsed = feedparser.parse(r.text)
         out = []
         
-        for e in parsed.entries[:20]:  # Limit to 20 items per feed
+        for e in parsed.entries[:15]:  # Limit to 15 items per feed
             title = getattr(e, "title", "Untitled")
             link = getattr(e, "link", "#")
             published = getattr(e, "published", "") or getattr(e, "updated", "")
-            summary = getattr(e, "summary", "")[:280]  # Truncate summary
-            source = parsed.feed.get("title", url)
+            summary = getattr(e, "summary", "")[:300]  # Truncate summary
+            source = parsed.feed.get("title", url.split('/')[2])
+            
+            # Create unique ID
+            import hashlib
+            item_id = hashlib.md5(f"{title}{link}".encode()).hexdigest()[:12]
             
             out.append({
-                "id": link,
+                "id": item_id,
                 "title": title,
                 "summary": summary,
                 "link": link,
