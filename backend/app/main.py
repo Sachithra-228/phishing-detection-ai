@@ -6,6 +6,7 @@ from app.db import get_db
 from app.agents.email_parser import parse_email
 from app.agents.risk_scorer import score
 from app.agents.alert_generator import make_alert
+from app.news import router as news_router
 from datetime import datetime
 from typing import List, Optional
 import logging
@@ -27,6 +28,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include news router
+app.include_router(news_router, prefix="/api", tags=["news"])
 
 @app.get("/api/health")
 async def health():

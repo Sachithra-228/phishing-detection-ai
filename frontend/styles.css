@@ -1576,6 +1576,153 @@ body {
   }
 }
 
+/* Global Threat Updates Styles */
+#threats { 
+  margin-top: 16px; 
+  background: linear-gradient(135deg, #0f274f 0%, #091a36 100%);
+  border: 1px solid #163a74;
+  border-radius: 16px;
+  padding: 2rem;
+}
+
+.th-header { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px; 
+  margin-bottom: 12px; 
+}
+
+.th-header h2 {
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.th-header .muted {
+  color: #a0aec0;
+  font-size: 1.1rem;
+  margin: 0 0 1.5rem 0;
+}
+
+.th-controls { 
+  display: flex; 
+  gap: 8px; 
+  flex-wrap: wrap; 
+  margin-bottom: 2rem;
+}
+
+.th-controls input, .th-controls select {
+  background: #091a36; 
+  color: #fff; 
+  border: 1px solid #163a74; 
+  padding: 10px 12px; 
+  border-radius: 10px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.th-controls input:focus, .th-controls select:focus {
+  outline: none;
+  border-color: #ff7c01;
+  box-shadow: 0 0 0 3px rgba(255, 124, 1, 0.1);
+}
+
+.th-controls button {
+  background: #ff7c01;
+  color: #0b1a33;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.th-controls button:hover {
+  background: #e66a00;
+  transform: translateY(-1px);
+}
+
+.th-grid {
+  display: grid; 
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 12px;
+}
+
+@media (max-width: 900px) { 
+  .th-grid { 
+    grid-template-columns: 1fr; 
+  } 
+}
+
+.th-card {
+  background: #0f274f; 
+  border: 1px solid #163a74; 
+  border-radius: 12px; 
+  padding: 14px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.th-card:hover {
+  transform: translateY(-2px);
+  border-color: #ff7c01;
+  box-shadow: 0 4px 20px rgba(255, 124, 1, 0.1);
+}
+
+.th-card .meta { 
+  font-size: 12px; 
+  opacity: 0.8; 
+  display: flex; 
+  gap: 8px; 
+  color: #a0aec0;
+}
+
+.badge { 
+  display: inline-block; 
+  padding: 2px 8px; 
+  border-radius: 999px; 
+  font-size: 12px; 
+  background: #ff7c01; 
+  color: #0b1a33; 
+  font-weight: 700; 
+}
+
+.th-card a { 
+  color: #ffcf9f; 
+  text-decoration: none; 
+  font-weight: 500;
+}
+
+.th-card a:hover { 
+  text-decoration: underline; 
+}
+
+.th-card h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #ffffff;
+  line-height: 1.4;
+}
+
+.th-card p {
+  opacity: 0.9;
+  margin: 0;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.th-card .badges-container {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}
+
 /* Features Section */
 .features {
   padding: 6rem 0;
