@@ -1576,7 +1576,22 @@ body {
   }
 }
 
-/* Updates Page Styles */
+.nav-link.active {
+  color: #ff7c01;
+  font-weight: 600;
+  position: relative;
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #ff7c01;
+  border-radius: 1px;
+}
 .page-header {
   background: linear-gradient(135deg, #0f274f 0%, #091a36 100%);
   padding: 4rem 0 2rem;
