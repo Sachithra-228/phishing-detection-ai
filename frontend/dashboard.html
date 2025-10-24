@@ -10,35 +10,75 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Google API Client -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
+    
+    <!-- Gmail Configuration -->
+    <script src="gmail-config.js"></script>
 </head>
 <body>
     <!-- Dashboard Header -->
     <header class="dashboard-header">
         <div class="container">
-            <h1>🛡️ Phishing Detection Dashboard</h1>
-            <p>AI-powered email security analysis</p>
+            <div class="header-top">
+                <div class="header-left">
+                    <h1>🛡️ Phishing Detection Dashboard</h1>
+                    <p>AI-powered email security analysis</p>
+                </div>
+                <div class="header-right">
+                    <button id="signOutBtn" class="sign-out-btn">Sign Out</button>
+                </div>
+            </div>
             <div class="user-info">
                 <span id="userEmail">Loading...</span>
-                <button id="signOutBtn" class="btn-secondary">Sign Out</button>
+                <button id="connectGmailBtn" class="gmail-connect-btn">
+                    <span class="btn-icon">📧</span>
+                    <span class="btn-text">Connect Gmail</span>
+                </button>
+                <button id="openQuickCheckModal" class="quick-check-trigger">
+                    <span class="btn-icon">🔍</span>
+                    <span class="btn-text">Quick Check</span>
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- Quick Email Check Section -->
-    <section class="quick-check-section">
-        <div class="container">
-            <div class="quick-check-card">
-                <div class="quick-check-header">
-                    <div class="quick-check-icon">⚡</div>
-                    <h2>Quick Email Check</h2>
-                    <p>Instantly analyze any email for phishing threats</p>
-                </div>
+
+    <!-- Sign Out Confirmation Modal -->
+    <div id="signOutModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content sign-out-modal">
+            <div class="modal-header">
+                <h3>🚪 Sign Out</h3>
+                <button class="modal-close" onclick="closeSignOutModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="sign-out-icon">👋</div>
+                <p>Are you sure you want to sign out?</p>
+                <p class="sign-out-subtitle">You'll need to sign in again to access your dashboard.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeSignOutModal()">Cancel</button>
+                <button class="btn-confirm" onclick="confirmSignOut()">Sign Out</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Check Modal -->
+    <div id="quickCheckModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚡ Quick Email Check</h2>
+                <button id="closeQuickCheckModal" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
                 <div class="quick-check-form">
                     <div class="input-group">
                         <input type="text" id="quickEmailUrl" placeholder="Paste email URL or content here..." class="quick-input">
                         <button id="quickCheckBtn" class="quick-check-btn">
                             <span class="btn-icon">🔍</span>
-                            <span class="btn-text">Quick Check</span>
+                            <span class="btn-text">Analyze</span>
                         </button>
                     </div>
                     <div class="quick-actions">
@@ -56,33 +96,279 @@
                         </button>
                     </div>
                 </div>
+                
+                <!-- Results Section -->
+                <div id="quickCheckResults" class="quick-results" style="display: none;">
+                    <div class="results-header">
+                        <h3>Analysis Results</h3>
+                        <div class="risk-indicator" id="quickRiskIndicator">
+                            <span class="risk-score" id="quickRiskScore">0%</span>
+                            <span class="risk-label" id="quickRiskLabel">Safe</span>
+                        </div>
+                    </div>
+                    <div class="results-content">
+                        <div class="chart-container-small">
+                            <canvas id="quickCheckChart"></canvas>
+                        </div>
+                        <div class="results-summary" id="quickResultsSummary">
+                            <!-- Summary will be populated here -->
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </section>
+    </div>
     
     <!-- Dashboard Main Content -->
     <main class="dashboard-main">
-        <!-- Stats Grid -->
+        <!-- Gmail Integration Section -->
+        <div class="gmail-section" id="gmailSection" style="display: none;">
+            <div class="gmail-header">
+                <div class="gmail-status">
+                    <div class="status-indicator connected"></div>
+                    <h3>📧 Gmail Connected</h3>
+                    <p>Automatically analyzing your emails for phishing threats</p>
+                </div>
+                <div class="gmail-actions">
+                    <button id="refreshGmailBtn" class="action-btn secondary">
+                        <span class="btn-icon">🔄</span>
+                        Refresh
+                    </button>
+                    <button id="disconnectGmailBtn" class="action-btn danger">
+                        <span class="btn-icon">🔌</span>
+                        Disconnect
+                    </button>
+                </div>
+            </div>
+            
+            <div class="gmail-content">
+                <div class="gmail-stats">
+                    <div class="gmail-stat">
+                        <span class="stat-number" id="gmailTotalEmails">0</span>
+                        <span class="stat-label">Total Emails</span>
+                    </div>
+                    <div class="gmail-stat">
+                        <span class="stat-number" id="gmailAnalyzedEmails">0</span>
+                        <span class="stat-label">Analyzed</span>
+                    </div>
+                    <div class="gmail-stat">
+                        <span class="stat-number" id="gmailThreatsFound">0</span>
+                        <span class="stat-label">Threats Found</span>
+                    </div>
+                </div>
+                
+                <div class="gmail-emails">
+                    <h4>Recent Emails</h4>
+                    <div id="gmailEmailList" class="email-list">
+                        <!-- Gmail emails will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid - Modern Design -->
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">📧</div>
-                <h4>Emails Analyzed</h4>
-                <div class="stat-value" id="emailsAnalyzed">0</div>
+            <div class="stat-card modern-card">
+                <div class="stat-card-header">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon">📧</div>
+                        <div class="stat-trend up">↗ +12%</div>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Emails Analyzed</h4>
+                        <div class="stat-value" id="emailsAnalyzed">0</div>
+                        <div class="stat-subtitle">This month</div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar" style="width: 75%"></div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">🛡️</div>
-                <h4>Threats Blocked</h4>
-                <div class="stat-value" id="threatsBlocked">0</div>
+            
+            <div class="stat-card modern-card">
+                <div class="stat-card-header">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon">🛡️</div>
+                        <div class="stat-trend up">↗ +8%</div>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Threats Blocked</h4>
+                        <div class="stat-value" id="threatsBlocked">0</div>
+                        <div class="stat-subtitle">Protected</div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar" style="width: 60%"></div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">⚡</div>
-                <h4>Avg Response Time</h4>
-                <div class="stat-value" id="avgResponseTime">0.2s</div>
+            
+            <div class="stat-card modern-card">
+                <div class="stat-card-header">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-trend down">↘ -0.1s</div>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Avg Response Time</h4>
+                        <div class="stat-value" id="avgResponseTime">0.2s</div>
+                        <div class="stat-subtitle">Lightning fast</div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar" style="width: 90%"></div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">🎯</div>
-                <h4>Accuracy Rate</h4>
-                <div class="stat-value" id="accuracyRate">98.5%</div>
+            
+            <div class="stat-card modern-card">
+                <div class="stat-card-header">
+                    <div class="stat-icon-wrapper">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-trend up">↗ +0.5%</div>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Accuracy Rate</h4>
+                        <div class="stat-value" id="accuracyRate">98.5%</div>
+                        <div class="stat-subtitle">Near perfect</div>
+                    </div>
+                </div>
+                <div class="stat-progress">
+                    <div class="progress-bar" style="width: 98%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="main-dashboard-grid">
+            <!-- Left Column -->
+            <div class="dashboard-left">
+                <!-- Chart Container -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>📊 Risk Distribution</h3>
+                        <p>Analysis results from your recent scans</p>
+                    </div>
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="riskChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Email Analysis Panel -->
+                <div class="panel analyze-section">
+                    <div class="analyze-header">
+                        <div class="analyze-icon">📧</div>
+                        <div class="analyze-title">
+                            <h2>Advanced Email Analysis</h2>
+                            <p>Deep dive analysis with AI-powered threat detection</p>
+                        </div>
+                    </div>
+                    
+                    <div class="analyze-form">
+                        <div class="email-input-container">
+                            <div class="input-label">
+                                <span class="label-icon">📝</span>
+                                <span>Email Content</span>
+                            </div>
+                            <textarea 
+                                id="rawEmail" 
+                                placeholder="Paste your email content here for comprehensive analysis..."
+                                rows="8"
+                                class="email-textarea"
+                            ></textarea>
+                            <div class="input-footer">
+                                <span class="char-count">0 characters</span>
+                                <span class="analysis-tip">💡 Tip: Include headers for better analysis</span>
+                            </div>
+                        </div>
+                        
+                        <div class="analyze-actions">
+                            <button id="runAnalyze" class="analyze-btn primary">
+                                <span class="btn-icon">🛡️</span>
+                                <span class="btn-text">Analyze Email</span>
+                                <div class="btn-loading" style="display: none;">
+                                    <div class="spinner"></div>
+                                </div>
+                            </button>
+                            <button id="demoBtn" class="analyze-btn secondary">
+                                <span class="btn-icon">🎯</span>
+                                <span class="btn-text">Try Demo Email</span>
+                            </button>
+                            <button id="clearBtn" class="analyze-btn clear">
+                                <span class="btn-icon">🗑️</span>
+                                <span class="btn-text">Clear</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="result" class="result-section" style="display: none;">
+                        <!-- Results will be displayed here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="dashboard-right">
+                <!-- Analysis History Panel -->
+                <div class="panel history-panel">
+                    <div class="history-header">
+                        <h2>📊 Analysis History</h2>
+                        <div class="history-controls">
+                            <div class="filter-group">
+                                <select id="riskFilter" class="filter-select">
+                                    <option value="all">All Risk Levels</option>
+                                    <option value="high">High Risk Only</option>
+                                    <option value="medium">Medium Risk Only</option>
+                                    <option value="low">Low Risk Only</option>
+                                </select>
+                                <select id="dateFilter" class="filter-select">
+                                    <option value="all">All Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">This Week</option>
+                                    <option value="month">This Month</option>
+                                </select>
+                            </div>
+                            <div class="history-actions">
+                                <button id="clearHistoryBtn" class="action-btn danger">
+                                    <span class="btn-icon">🗑️</span>
+                                    Clear All
+                                </button>
+                                <button id="exportHistoryBtn" class="action-btn secondary">
+                                    <span class="btn-icon">📤</span>
+                                    Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="history-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="totalAnalyses">0</span>
+                            <span class="stat-label">Total</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="highRiskCount">0</span>
+                            <span class="stat-label">High Risk</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="mediumRiskCount">0</span>
+                            <span class="stat-label">Medium Risk</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="lowRiskCount">0</span>
+                            <span class="stat-label">Low Risk</span>
+                        </div>
+                    </div>
+                    
+                    <div class="history-content">
+                        <div id="historyList" class="history-list">
+                            <!-- History items will be populated here -->
+                        </div>
+                        <div id="noHistoryMessage" class="no-history" style="display: none;">
+                            <div class="no-history-icon">📭</div>
+                            <h3>No Analysis History</h3>
+                            <p>Start analyzing emails to see your history here</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -93,28 +379,31 @@
             
             <div class="agents-grid">
                 <!-- Email Parser Agent -->
-                <div class="agent-card">
+                <div class="agent-card clickable-agent" onclick="navigateToAgent('email-parser')">
                     <div class="agent-header">
                         <div class="agent-icon">📧</div>
                         <h3>Email Parser Agent</h3>
                         <span class="agent-role">The "Reader"</span>
+                        <div class="agent-status">
+                            <span class="status-indicator active"></span>
+                            <span class="status-text">Active</span>
+                        </div>
                     </div>
                     <div class="agent-content">
                         <p class="agent-description">
                             Takes raw email content and extracts useful details for analysis.
                         </p>
-                        <div class="agent-jobs">
-                            <h4>Main Jobs:</h4>
-                            <ul>
-                                <li>Parse headers (From, To, Subject)</li>
-                                <li>Extract URLs, attachments, and body text</li>
-                                <li>Detect named entities (person, org, dates, etc.)</li>
-                                <li>Store structured info in MongoDB</li>
-                                <li>Send cleaned data to Risk Scorer Agent</li>
-                            </ul>
+                        <div class="agent-preview">
+                            <div class="preview-item">
+                                <span class="preview-label">Processed Today:</span>
+                                <span class="preview-value">1,247 emails</span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">Success Rate:</span>
+                                <span class="preview-value">99.8%</span>
+                            </div>
                         </div>
                         <div class="agent-tech">
-                            <h4>Tech Used:</h4>
                             <div class="tech-tags">
                                 <span class="tech-tag">NLP (spaCy)</span>
                                 <span class="tech-tag">IR (Vector Search)</span>
@@ -122,66 +411,80 @@
                             </div>
                         </div>
                     </div>
+                    <div class="agent-footer">
+                        <span class="view-details">View Details →</span>
+                    </div>
                 </div>
 
                 <!-- Risk Scorer Agent -->
-                <div class="agent-card">
+                <div class="agent-card clickable-agent" onclick="navigateToAgent('risk-scorer')">
                     <div class="agent-header">
                         <div class="agent-icon">🎯</div>
                         <h3>Risk Scorer Agent</h3>
                         <span class="agent-role">The "Analyzer"</span>
+                        <div class="agent-status">
+                            <span class="status-indicator active"></span>
+                            <span class="status-text">Active</span>
+                        </div>
                     </div>
                     <div class="agent-content">
                         <p class="agent-description">
                             Receives structured data and predicts how risky the email is.
                         </p>
-                        <div class="agent-jobs">
-                            <h4>Main Jobs:</h4>
-                            <ul>
-                                <li>Analyze sender reputation</li>
-                                <li>Check links and attachments</li>
-                                <li>Detect phishing keywords</li>
-                                <li>Compare content embeddings</li>
-                                <li>Combine IR + LLM reasoning</li>
-                                <li>Output risk score (0-100) and reasoning</li>
-                            </ul>
-                        </div>
-                        <div class="agent-example">
-                            <h4>Example Output:</h4>
-                            <div class="example-box">
-                                <strong>87% phishing risk</strong> — suspicious domain 'paypa1.com' detected and urgent tone in message.
+                        <div class="agent-preview">
+                            <div class="preview-item">
+                                <span class="preview-label">Threats Detected:</span>
+                                <span class="preview-value">23 today</span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">Avg Risk Score:</span>
+                                <span class="preview-value">34.2%</span>
                             </div>
                         </div>
+                        <div class="agent-example">
+                            <div class="example-box">
+                                <strong>87% phishing risk</strong> — suspicious domain detected
+                            </div>
+                        </div>
+                    </div>
+                    <div class="agent-footer">
+                        <span class="view-details">View Details →</span>
                     </div>
                 </div>
 
                 <!-- Alert Generator Agent -->
-                <div class="agent-card">
+                <div class="agent-card clickable-agent" onclick="navigateToAgent('alert-generator')">
                     <div class="agent-header">
                         <div class="agent-icon">🚨</div>
                         <h3>Alert Generator Agent</h3>
                         <span class="agent-role">The "Communicator"</span>
+                        <div class="agent-status">
+                            <span class="status-indicator active"></span>
+                            <span class="status-text">Active</span>
+                        </div>
                     </div>
                     <div class="agent-content">
                         <p class="agent-description">
                             Explains and reports what happened in human-friendly terms.
                         </p>
-                        <div class="agent-jobs">
-                            <h4>Main Jobs:</h4>
-                            <ul>
-                                <li>Receive risk score + reasoning</li>
-                                <li>Generate human-friendly alerts</li>
-                                <li>Store alerts in database</li>
-                                <li>Show notifications on dashboard</li>
-                                <li>Send alerts via email/Slack/Teams</li>
-                            </ul>
-                        </div>
-                        <div class="agent-example">
-                            <h4>Example Alert:</h4>
-                            <div class="example-box">
-                                "This email may be a phishing attempt impersonating your bank. It includes a fake login link and asks for credentials."
+                        <div class="agent-preview">
+                            <div class="preview-item">
+                                <span class="preview-label">Alerts Sent:</span>
+                                <span class="preview-value">18 today</span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">Response Time:</span>
+                                <span class="preview-value">0.3s avg</span>
                             </div>
                         </div>
+                        <div class="agent-example">
+                            <div class="example-box">
+                                "This email may be a phishing attempt impersonating your bank."
+                            </div>
+                        </div>
+                    </div>
+                    <div class="agent-footer">
+                        <span class="view-details">View Details →</span>
                     </div>
                 </div>
             </div>
@@ -233,131 +536,6 @@
             </div>
         </div>
 
-        <!-- Chart Container -->
-        <div class="chart-container">
-            <h3>Risk Distribution</h3>
-            <div style="position: relative; height: 300px;">
-                <canvas id="riskChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Dashboard Grid -->
-        <div class="dashboard-grid">
-            <!-- Email Analysis Panel -->
-            <div class="panel analyze-section">
-                <div class="analyze-header">
-                    <div class="analyze-icon">📧</div>
-                    <div class="analyze-title">
-                        <h2>Advanced Email Analysis</h2>
-                        <p>Deep dive analysis with AI-powered threat detection</p>
-                    </div>
-                </div>
-                
-                <div class="analyze-form">
-                    <div class="email-input-container">
-                        <div class="input-label">
-                            <span class="label-icon">📝</span>
-                            <span>Email Content</span>
-                        </div>
-                        <textarea 
-                            id="rawEmail" 
-                            placeholder="Paste your email content here for comprehensive analysis..."
-                            rows="8"
-                            class="email-textarea"
-                        ></textarea>
-                        <div class="input-footer">
-                            <span class="char-count">0 characters</span>
-                            <span class="analysis-tip">💡 Tip: Include headers for better analysis</span>
-                        </div>
-                    </div>
-                    
-                    <div class="analyze-actions">
-                        <button id="runAnalyze" class="analyze-btn primary">
-                            <span class="btn-icon">🛡️</span>
-                            <span class="btn-text">Analyze Email</span>
-                            <div class="btn-loading" style="display: none;">
-                                <div class="spinner"></div>
-                            </div>
-                        </button>
-                        <button id="demoBtn" class="analyze-btn secondary">
-                            <span class="btn-icon">🎯</span>
-                            <span class="btn-text">Try Demo Email</span>
-                        </button>
-                        <button id="clearBtn" class="analyze-btn clear">
-                            <span class="btn-icon">🗑️</span>
-                            <span class="btn-text">Clear</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="result" class="result-section" style="display: none;">
-                    <!-- Results will be displayed here -->
-                </div>
-            </div>
-
-            <!-- Analysis History Panel -->
-            <div class="panel history-panel">
-                <div class="history-header">
-                    <h2>📊 Analysis History</h2>
-                    <div class="history-controls">
-                        <div class="filter-group">
-                            <select id="riskFilter" class="filter-select">
-                                <option value="all">All Risk Levels</option>
-                                <option value="high">High Risk Only</option>
-                                <option value="medium">Medium Risk Only</option>
-                                <option value="low">Low Risk Only</option>
-                            </select>
-                            <select id="dateFilter" class="filter-select">
-                                <option value="all">All Time</option>
-                                <option value="today">Today</option>
-                                <option value="week">This Week</option>
-                                <option value="month">This Month</option>
-                            </select>
-                        </div>
-                        <div class="history-actions">
-                            <button id="clearHistoryBtn" class="action-btn danger">
-                                <span class="btn-icon">🗑️</span>
-                                Clear All
-                            </button>
-                            <button id="exportHistoryBtn" class="action-btn secondary">
-                                <span class="btn-icon">📤</span>
-                                Export
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="history-stats">
-                    <div class="stat-item">
-                        <span class="stat-number" id="totalAnalyses">0</span>
-                        <span class="stat-label">Total</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number" id="highRiskCount">0</span>
-                        <span class="stat-label">High Risk</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number" id="mediumRiskCount">0</span>
-                        <span class="stat-label">Medium Risk</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number" id="lowRiskCount">0</span>
-                        <span class="stat-label">Low Risk</span>
-                    </div>
-                </div>
-                
-                <div class="history-content">
-                    <div id="historyList" class="history-list">
-                        <!-- History items will be populated here -->
-                    </div>
-                    <div id="noHistoryMessage" class="no-history" style="display: none;">
-                        <div class="no-history-icon">📭</div>
-                        <h3>No Analysis History</h3>
-                        <p>Start analyzing emails to see your history here</p>
-                    </div>
-                </div>
-            </div>
-        </div>
     </main>
 
     <!-- Scripts -->

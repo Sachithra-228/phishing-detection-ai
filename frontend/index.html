@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Phishing Detection AI - Protect Your Digital Life</title>
   <link rel="stylesheet" href="styles.css"/>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -26,10 +24,8 @@
           <a href="#how-it-works" class="nav-link">How It Works</a>
           <a href="#pricing" class="nav-link">Pricing</a>
           <a href="updates.html" class="nav-link">Global Threat Updates</a>
-          <div class="nav-auth">
-            <a href="sign-in.html" class="btn-secondary">Sign In</a>
-            <a href="sign-up.html" class="btn-primary">Get Started</a>
-          </div>
+          <a href="signin.html" class="nav-link">Sign In</a>
+          <a href="signup.html" class="nav-link">Get Started</a>
         </div>
       </div>
     </nav>
@@ -39,17 +35,15 @@
       <div class="hero-container">
         <div class="hero-content">
           <h1 class="hero-title">
-            Protect Your Digital Life with 
-            <span class="gradient-text">AI-Powered</span> 
-            Phishing Detection
+            <div class="hero-line-1">Protect Your Digital Life with</div>
+            <div class="hero-line-2 typing-text" id="typing-text"></div>
           </h1>
           <p class="hero-description">
-            Advanced machine learning algorithms analyze emails in real-time to detect phishing attempts, 
-            keeping your personal and business data secure from cyber threats.
+            Advanced machine learning algorithms analyze emails in real-time to detect phishing attempts, keeping your personal and business data secure from cyber threats.
           </p>
-          <div class="hero-actions">
-            <a href="sign-up.html" class="btn-primary btn-large">Start Free Trial</a>
-            <a href="demo.html" class="btn-secondary btn-large">Watch Demo</a>
+          <div class="hero-buttons">
+            <a href="signup.html" class="btn-primary">Start Free Trial</a>
+            <a href="demo.html" class="btn-secondary">Watch Demo</a>
           </div>
           <div class="hero-stats">
             <div class="stat">
@@ -66,104 +60,144 @@
             </div>
           </div>
         </div>
-        <div class="hero-visual">
-          <div class="dashboard-preview">
-            <div class="preview-header">
-              <div class="preview-dots">
-                <span></span><span></span><span></span>
-              </div>
-            </div>
-            <div class="preview-content">
-              <div class="preview-chart-container">
-                <canvas id="interactivePieChart" width="300" height="300"></canvas>
-                <div class="chart-center-info">
-                  <div class="center-number" id="centerNumber">847</div>
-                  <div class="center-label">Emails</div>
-                </div>
-              </div>
-              <div class="preview-stats">
-                <div class="preview-stat">
-                  <span class="preview-stat-number" id="emailsCount">0</span>
-                  <span class="preview-stat-label">Emails Scanned</span>
-                </div>
-                <div class="preview-stat">
-                  <span class="preview-stat-number" id="threatsCount">0</span>
-                  <span class="preview-stat-label">Threats Blocked</span>
-                </div>
-                <div class="preview-stat">
-                  <span class="preview-stat-number" id="safeCount">0</span>
-                  <span class="preview-stat-label">Safe Emails</span>
+          <div class="hero-visual">
+            <div class="chart-container">
+              <canvas id="animatedLineChart"></canvas>
+              <div class="chart-overlay">
+                <div class="chart-stats">
+                  <div class="stat-item">
+                    <span class="stat-number" id="emailsScanned">0</span>
+                    <span class="stat-label">Emails Scanned</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-number" id="threatsBlocked">0</span>
+                    <span class="stat-label">Threats Blocked</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-number" id="accuracyRate">0</span>
+                    <span class="stat-label">Accuracy Rate</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
       </div>
     </section>
 
     <!-- Features Section -->
     <section id="features" class="features">
       <div class="container">
-        <h2 class="section-title">Powerful Features</h2>
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">🤖</div>
+        <div class="section-header">
+          <h2 class="section-title">Powerful Protection for Your Inbox</h2>
+          <p class="section-subtitle">Advanced AI technology meets intuitive design to keep you safe from cyber threats</p>
+        </div>
+        
+        <div class="features-grid-modern">
+          <div class="feature-card-modern">
+            <div class="feature-icon-modern">
+              <div class="icon-bg">AI</div>
+            </div>
             <h3>AI-Powered Analysis</h3>
             <p>Advanced machine learning models trained on millions of phishing samples for maximum accuracy.</p>
           </div>
-          <div class="feature-card">
-            <div class="feature-icon">⚡</div>
+          
+          <div class="feature-card-modern">
+            <div class="feature-icon-modern">
+              <div class="icon-bg">RT</div>
+            </div>
             <h3>Real-Time Detection</h3>
             <p>Instant analysis of incoming emails with sub-second response times for immediate protection.</p>
           </div>
-          <div class="feature-card">
-            <div class="feature-icon">📊</div>
+          
+          <div class="feature-card-modern">
+            <div class="feature-icon-modern">
+              <div class="icon-bg">AN</div>
+            </div>
             <h3>Detailed Analytics</h3>
             <p>Comprehensive reports and insights into your email security patterns and threat landscape.</p>
           </div>
-          <div class="feature-card">
-            <div class="feature-icon">🔗</div>
+          
+          <div class="feature-card-modern">
+            <div class="feature-icon-modern">
+              <div class="icon-bg">GM</div>
+            </div>
             <h3>Gmail Integration</h3>
             <p>Seamless Chrome extension integration with Gmail for automatic email scanning.</p>
           </div>
-          <div class="feature-card">
-            <div class="feature-icon">🛡️</div>
+          
+          <div class="feature-card-modern">
+            <div class="feature-icon-modern">
+              <div class="icon-bg">ML</div>
+            </div>
             <h3>Multi-Layer Protection</h3>
             <p>Combines rule-based filtering with ML models for comprehensive threat detection.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-icon">📱</div>
+    </div>
+          
+          <div class="feature-card-modern">
+            <div class="feature-icon-modern">
+              <div class="icon-bg">CP</div>
+            </div>
             <h3>Cross-Platform</h3>
             <p>Works across web browsers, mobile devices, and integrates with popular email clients.</p>
           </div>
         </div>
-    </div>
+      </div>
     </section>
 
     <!-- How It Works Section -->
     <section id="how-it-works" class="how-it-works">
       <div class="container">
-        <h2 class="section-title">How It Works</h2>
-        <div class="steps">
-          <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
+        <div class="section-header">
+          <span class="section-badge">Process</span>
+          <h2 class="section-title">How It Works</h2>
+          <p class="section-subtitle">Simple steps to comprehensive protection</p>
+        </div>
+        
+        <div class="steps-modern">
+          <div class="step-modern">
+            <div class="step-visual">
+              <div class="step-number-modern">01</div>
+            </div>
+            <div class="step-content-modern">
               <h3>Connect Your Email</h3>
-              <p>Install our Chrome extension or connect your email account securely.</p>
+              <p>Securely connect your Gmail account or paste email content for analysis</p>
+              <ul class="step-features">
+                <li>OAuth 2.0 secure authentication</li>
+                <li>No password storage</li>
+                <li>Read-only access</li>
+              </ul>
             </div>
+            <div class="step-arrow">→</div>
           </div>
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
+          
+          <div class="step-modern">
+            <div class="step-visual">
+              <div class="step-number-modern">02</div>
+            </div>
+            <div class="step-content-modern">
               <h3>AI Analysis</h3>
-              <p>Our AI analyzes every email using advanced machine learning algorithms.</p>
+              <p>Our advanced AI analyzes email content, headers, and metadata in real-time</p>
+              <ul class="step-features">
+                <li>Natural language processing</li>
+                <li>Pattern recognition</li>
+                <li>Behavioral analysis</li>
+              </ul>
             </div>
+            <div class="step-arrow">→</div>
           </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
+          
+          <div class="step-modern">
+            <div class="step-visual">
+              <div class="step-number-modern">03</div>
+            </div>
+            <div class="step-content-modern">
               <h3>Get Protected</h3>
-              <p>Receive instant alerts and detailed reports on potential phishing threats.</p>
+              <p>Receive instant alerts and detailed reports on potential threats</p>
+              <ul class="step-features">
+                <li>Real-time notifications</li>
+                <li>Detailed threat reports</li>
+                <li>Actionable recommendations</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -173,67 +207,99 @@
     <!-- Pricing Section -->
     <section id="pricing" class="pricing">
       <div class="container">
-        <h2 class="section-title">Simple Pricing</h2>
-        <div class="pricing-grid">
-          <div class="pricing-card">
-            <h3>Free</h3>
-            <div class="price">
-              <span class="currency">$</span>
-              <span class="amount">0</span>
-              <span class="period">/month</span>
-            </div>
-            <ul class="features-list">
-              <li>✓ 100 emails/month</li>
-              <li>✓ Basic threat detection</li>
-              <li>✓ Email analysis</li>
-              <li>✓ Chrome extension</li>
-            </ul>
-            <button class="btn-secondary">Get Started</button>
+        <div class="section-header">
+          <span class="section-badge">Pricing</span>
+          <h2 class="section-title">Simple Pricing</h2>
+          <p class="section-subtitle">Choose the plan that fits your needs</p>
+        </div>
+        
+        <div class="pricing-toggle">
+          <span class="toggle-label">Monthly</span>
+          <div class="toggle-switch">
+            <input type="checkbox" id="pricingToggle">
+            <label for="pricingToggle"></label>
           </div>
-          <div class="pricing-card featured">
-            <div class="badge">Most Popular</div>
-            <h3>Pro</h3>
-            <div class="price">
-              <span class="currency">$</span>
-              <span class="amount">9</span>
-              <span class="period">/month</span>
+          <span class="toggle-label">Annual <span class="savings-badge">Save 20%</span></span>
+        </div>
+        
+        <div class="pricing-grid-modern">
+          <div class="pricing-card-modern">
+            <div class="pricing-header">
+              <h3>Free</h3>
+              <p class="plan-description">Perfect for personal use</p>
+              <div class="price-modern">
+                <span class="currency">$</span>
+                <span class="amount" data-monthly="0" data-annual="0">0</span>
+                <span class="period" data-monthly="/month" data-annual="/month">/month</span>
+              </div>
             </div>
-            <ul class="features-list">
-              <li>✓ 10,000 emails/month</li>
-              <li>✓ Advanced AI detection</li>
-              <li>✓ Real-time alerts</li>
-              <li>✓ Detailed analytics</li>
-              <li>✓ Priority support</li>
+            <ul class="features-list-modern">
+              <li><span class="check-icon">✓</span> 100 emails/month</li>
+              <li><span class="check-icon">✓</span> Basic threat detection</li>
+              <li><span class="check-icon">✓</span> Email reports</li>
+              <li><span class="check-icon">×</span> Real-time monitoring</li>
+              <li><span class="check-icon">×</span> Advanced analytics</li>
             </ul>
-            <button class="btn-primary">Start Free Trial</button>
+            <a href="signup.html" class="btn-pricing btn-secondary">Get Started</a>
           </div>
-          <div class="pricing-card">
-            <h3>Enterprise</h3>
-            <div class="price">
-              <span class="currency">$</span>
-              <span class="amount">29</span>
-              <span class="period">/month</span>
+          
+          <div class="pricing-card-modern featured">
+            <div class="popular-badge">Most Popular</div>
+            <div class="pricing-header">
+              <h3>Pro</h3>
+              <p class="plan-description">Ideal for small businesses</p>
+              <div class="price-modern">
+                <span class="currency">$</span>
+                <span class="amount" data-monthly="29" data-annual="23">29</span>
+                <span class="period" data-monthly="/month" data-annual="/month">/month</span>
+              </div>
+              <div class="annual-savings" data-monthly="" data-annual="Save $72/year">Save $72/year</div>
             </div>
-            <ul class="features-list">
-              <li>✓ Unlimited emails</li>
-              <li>✓ Custom AI models</li>
-              <li>✓ Team management</li>
-              <li>✓ API access</li>
-              <li>✓ 24/7 support</li>
+            <ul class="features-list-modern">
+              <li><span class="check-icon">✓</span> 10,000 emails/month</li>
+              <li><span class="check-icon">✓</span> Advanced threat detection</li>
+              <li><span class="check-icon">✓</span> Real-time monitoring</li>
+              <li><span class="check-icon">✓</span> Detailed analytics</li>
+              <li><span class="check-icon">✓</span> Priority support</li>
             </ul>
-            <button class="btn-secondary">Contact Sales</button>
+            <a href="signup.html" class="btn-pricing btn-primary">Start Free Trial</a>
+          </div>
+          
+          <div class="pricing-card-modern">
+            <div class="pricing-header">
+              <h3>Enterprise</h3>
+              <p class="plan-description">For large organizations</p>
+              <div class="price-modern">
+                <span class="currency">$</span>
+                <span class="amount" data-monthly="99" data-annual="79">99</span>
+                <span class="period" data-monthly="/month" data-annual="/month">/month</span>
+              </div>
+              <div class="annual-savings" data-monthly="" data-annual="Save $240/year">Save $240/year</div>
+            </div>
+            <ul class="features-list-modern">
+              <li><span class="check-icon">✓</span> Unlimited emails</li>
+              <li><span class="check-icon">✓</span> Enterprise-grade security</li>
+              <li><span class="check-icon">✓</span> Custom integrations</li>
+              <li><span class="check-icon">✓</span> Dedicated support</li>
+              <li><span class="check-icon">✓</span> Advanced reporting</li>
+            </ul>
+            <a href="signup.html" class="btn-pricing btn-secondary">Contact Sales</a>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta">
-      <div class="container">
-        <div class="cta-content">
-          <h2>Ready to Protect Your Digital Life?</h2>
-          <p>Join thousands of users who trust our AI-powered phishing detection.</p>
-          <a href="sign-up.html" class="btn-primary btn-large">Start Your Free Trial</a>
+        
+        <div class="pricing-features">
+          <div class="feature-comparison">
+            <div class="compare-icon">SEC</div>
+            <p>All plans include enterprise-grade security features and regular updates</p>
+          </div>
+          <div class="feature-comparison">
+            <div class="compare-icon">FREE</div>
+            <p>14-day free trial on all paid plans with no credit card required</p>
+          </div>
+          <div class="feature-comparison">
+            <div class="compare-icon">FLEX</div>
+            <p>Cancel anytime with no long-term contracts or hidden fees</p>
+          </div>
         </div>
       </div>
     </section>
@@ -252,7 +318,6 @@
               <li><a href="#features">Features</a></li>
               <li><a href="#pricing">Pricing</a></li>
               <li><a href="demo.html">Demo</a></li>
-              <li><a href="updates.html">Threat Updates</a></li>
             </ul>
           </div>
           <div class="footer-section">
@@ -260,7 +325,6 @@
             <ul>
               <li><a href="#">Help Center</a></li>
               <li><a href="#">Contact Us</a></li>
-              <li><a href="#">Status</a></li>
               <li><a href="#">Documentation</a></li>
             </ul>
           </div>
@@ -268,9 +332,8 @@
             <h4>Company</h4>
             <ul>
               <li><a href="#">About</a></li>
-              <li><a href="#">Blog</a></li>
-              <li><a href="#">Careers</a></li>
               <li><a href="#">Privacy</a></li>
+              <li><a href="#">Terms</a></li>
             </ul>
           </div>
         </div>
@@ -281,243 +344,196 @@
     </footer>
   </div>
 
-
-
   <script src="firebase-config.js"></script>
   <script src="auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
   
   <script>
-    // Modern 3D Interactive Pie Chart
+    // Animated Line Chart
     document.addEventListener('DOMContentLoaded', function() {
-      initInteractivePieChart();
-      animateCounters();
+      initAnimatedLineChart();
     });
 
-    let interactiveChart = null;
-    let hoveredSegment = null;
-
-    function initInteractivePieChart() {
-      const ctx = document.getElementById('interactivePieChart').getContext('2d');
+    function initAnimatedLineChart() {
+      console.log('Initializing animated line chart...');
+      const ctx = document.getElementById('animatedLineChart');
+      console.log('Canvas element:', ctx);
       
-      interactiveChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: ['Safe Emails', 'Threats Blocked', 'Pending Analysis'],
-          datasets: [{
-            data: [824, 23, 0], // 824 safe, 23 threats, 0 pending
-            backgroundColor: [
-              '#4CAF50', // Green for safe emails
-              '#FF5722', // Red for threats
-              '#FFC107'  // Yellow for pending
-            ],
-            borderColor: [
-              '#2E7D32',
-              '#D32F2F', 
-              '#F57F17'
-            ],
-            borderWidth: 3,
-            hoverBackgroundColor: [
-              '#66BB6A',
-              '#FF7043',
-              '#FFD54F'
-            ],
-            hoverBorderWidth: 5,
-            hoverOffset: 15
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: {
-            animateRotate: true,
-            animateScale: true,
-            duration: 2000,
-            easing: 'easeInOutQuart',
-            onComplete: function() {
-              addChartInteractions();
-            }
+      if (!ctx) {
+        console.error('Canvas element not found!');
+        return;
+      }
+
+      // Check if Chart is available
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.js library not loaded!');
+        return;
+      }
+
+      console.log('Chart.js is available, creating chart...');
+
+      // Generate sample data for the last 7 days
+      const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const emailsData = [1200, 1900, 3000, 5000, 2000, 3000, 4500];
+      const threatsData = [12, 19, 30, 50, 20, 30, 45];
+
+      try {
+        const chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Emails Scanned',
+                data: emailsData,
+                borderColor: '#4F709C',
+                backgroundColor: 'rgba(79, 112, 156, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#4F709C',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+              },
+              {
+                label: 'Threats Blocked',
+                data: threatsData,
+                borderColor: '#D8C4B6',
+                backgroundColor: 'rgba(216, 196, 182, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#D8C4B6',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+              }
+            ]
           },
-          plugins: {
-            legend: {
-              display: false
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
             },
-            tooltip: {
-              enabled: true,
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              titleColor: '#fff',
-              bodyColor: '#fff',
-              borderColor: '#667eea',
-              borderWidth: 2,
-              cornerRadius: 8,
-              displayColors: true,
-              callbacks: {
-                label: function(context) {
-                  const label = context.label || '';
-                  const value = context.parsed;
-                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                  const percentage = ((value / total) * 100).toFixed(1);
-                  return `${label}: ${value} (${percentage}%)`;
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  font: {
+                    size: 12,
+                    weight: '500'
+                  }
+                }
+              },
+              y: {
+                grid: {
+                  color: 'rgba(255, 255, 255, 0.1)',
+                  drawBorder: false
+                },
+                ticks: {
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  font: {
+                    size: 12,
+                    weight: '500'
+                  }
                 }
               }
-            }
-          },
-          interaction: {
-            intersect: false,
-            mode: 'index'
-          },
-          onHover: function(event, elements) {
-            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
-          },
-          onClick: function(event, elements) {
-            if (elements.length > 0) {
-              const index = elements[0].index;
-              const data = interactiveChart.data.datasets[0].data[index];
-              const label = interactiveChart.data.labels[index];
-              
-              // Animate the clicked segment
-              animateSegmentClick(index, data, label);
+            },
+            animation: {
+              duration: 2000,
+              easing: 'easeInOutQuart'
+            },
+            interaction: {
+              intersect: false,
+              mode: 'index'
             }
           }
-        }
-      });
-    }
+        });
 
-    function addChartInteractions() {
-      const canvas = document.getElementById('interactivePieChart');
-      
-      // Add continuous rotation animation
-      canvas.style.animation = 'slowRotate 20s linear infinite';
-      
-      // Add hover effects
-      canvas.addEventListener('mouseenter', function() {
-        canvas.style.animationPlayState = 'paused';
-        canvas.style.transform = 'scale(1.05)';
-        canvas.style.transition = 'transform 0.3s ease';
-      });
-      
-      canvas.addEventListener('mouseleave', function() {
-        canvas.style.animationPlayState = 'running';
-        canvas.style.transform = 'scale(1)';
-      });
-    }
-
-    function animateSegmentClick(index, data, label) {
-      // Create a ripple effect
-      const canvas = document.getElementById('interactivePieChart');
-      const rect = canvas.getBoundingClientRect();
-      
-      // Update center number with animation
-      const centerNumber = document.getElementById('centerNumber');
-      centerNumber.style.transform = 'scale(1.2)';
-      centerNumber.textContent = data;
-      
-      setTimeout(() => {
-        centerNumber.style.transform = 'scale(1)';
-      }, 300);
-      
-      // Show a brief highlight effect
-      canvas.style.filter = 'brightness(1.2) drop-shadow(0 0 20px rgba(102, 126, 234, 0.5))';
-      setTimeout(() => {
-        canvas.style.filter = 'none';
-      }, 500);
+        console.log('Chart created successfully:', chart);
+        
+        // Animate counters
+        animateCounters();
+      } catch (error) {
+        console.error('Error creating chart:', error);
+      }
     }
 
     function animateCounters() {
-      // Animate all counters
-      animateCounter('emailsCount', 0, 847, 2000);
-      setTimeout(() => {
-        animateCounter('threatsCount', 0, 23, 1500);
-      }, 500);
-      setTimeout(() => {
-        animateCounter('safeCount', 0, 824, 1500);
-      }, 1000);
+      const emailsElement = document.getElementById('emailsScanned');
+      const threatsElement = document.getElementById('threatsBlocked');
+      const accuracyElement = document.getElementById('accuracyRate');
+
+      if (emailsElement) animateCounter(emailsElement, 12500, 'K+', 2000);
+      if (threatsElement) animateCounter(threatsElement, 250, '', 2000);
+      if (accuracyElement) animateCounter(accuracyElement, 99.2, '%', 2000);
     }
 
-    function animateCounter(elementId, start, end, duration) {
-      const element = document.getElementById(elementId);
-      const range = end - start;
-      const increment = range / (duration / 16);
-      let current = start;
-
-      const timer = setInterval(() => {
-        current += increment;
-        if (current >= end) {
-          current = end;
-          clearInterval(timer);
+    function animateCounter(element, target, suffix, duration) {
+      let start = 0;
+      const increment = target / (duration / 16);
+      
+      function updateCounter() {
+        start += increment;
+        if (start < target) {
+          element.textContent = Math.floor(start) + suffix;
+          requestAnimationFrame(updateCounter);
+        } else {
+          element.textContent = target + suffix;
         }
-        element.textContent = Math.floor(current);
-      }, 16);
+      }
+      
+      updateCounter();
     }
 
-    // Add CSS animations and styles
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes slowRotate {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
+  </script>
+
+  <!-- Floating Chat Bot -->
+  <div id="chatBotWidget" class="chatbot-widget">
+    <div id="chatBotToggle" class="chatbot-toggle">
+      <div class="chatbot-icon">🤖</div>
+      <div class="chatbot-pulse"></div>
+    </div>
+    
+    <div id="chatBotWindow" class="chatbot-window" style="display: none;">
+      <div class="chatbot-header">
+        <div class="chatbot-title">
+          <div class="chatbot-avatar">🤖</div>
+          <div class="chatbot-info">
+            <h4>AI Assistant</h4>
+            <span class="chatbot-status">Online</span>
+          </div>
+        </div>
+        <button class="chatbot-close">&times;</button>
+      </div>
       
-      @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-      }
+      <div class="chatbot-messages" id="chatBotMessages">
+        <div class="chatbot-message bot-message">
+          <div class="message-content">
+            <p>Hi! I'm your AI assistant. How can I help you with phishing detection today?</p>
+          </div>
+        </div>
+      </div>
       
-      .preview-chart-container {
-        position: relative;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 1rem;
-      }
-      
-      .chart-center-info {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
-        pointer-events: none;
-      }
-      
-      .center-number {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #ffd700;
-        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-        transition: all 0.3s ease;
-      }
-      
-      .center-label {
-        font-size: 1rem;
-        color: rgba(255, 255, 255, 0.8);
-        margin-top: 0.25rem;
-      }
-      
-      .preview-stat-number {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #ffd700;
-        display: block;
-        transition: all 0.3s ease;
-      }
-      
-      .preview-stat-number:hover {
-        transform: scale(1.1);
-        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-      }
-      
-      #interactivePieChart {
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-      
-      #interactivePieChart:hover {
-        filter: brightness(1.1);
-      }
-    `;
-    document.head.appendChild(style);
-    </script>
+      <div class="chatbot-input">
+        <input type="text" id="chatBotInput" placeholder="Ask me anything about phishing detection..." />
+        <button id="chatBotSend">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+  <script src="chatbot.js"></script>
 </body>
 </html>

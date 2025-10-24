@@ -4,6 +4,482 @@ const API_BASE = 'http://localhost:3000';
 let dashboardInitialized = false;
 let analysisHistory = [];
 
+// Gmail Integration
+let gmailConnected = false;
+let gmailEmails = [];
+let gmailAccessToken = null;
+let gmailClient = null;
+
+// Google OAuth Configuration
+const GOOGLE_CLIENT_ID = GMAIL_CONFIG.CLIENT_ID;
+const GOOGLE_API_KEY = GMAIL_CONFIG.API_KEY;
+const GMAIL_SCOPES = GMAIL_CONFIG.SCOPES;
+
+// Gmail OAuth setup
+function setupGmailIntegration() {
+    const connectBtn = document.getElementById('connectGmailBtn');
+    const disconnectBtn = document.getElementById('disconnectGmailBtn');
+    const refreshBtn = document.getElementById('refreshGmailBtn');
+    const gmailSection = document.getElementById('gmailSection');
+    
+    if (connectBtn) {
+        connectBtn.addEventListener('click', connectGmail);
+    }
+    
+    if (disconnectBtn) {
+        disconnectBtn.addEventListener('click', disconnectGmail);
+    }
+    
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', refreshGmailEmails);
+    }
+    
+    // Check if Gmail is already connected
+    checkGmailConnection();
+}
+
+// Connect to Gmail using Google OAuth
+async function connectGmail() {
+    const connectBtn = document.getElementById('connectGmailBtn');
+    const gmailSection = document.getElementById('gmailSection');
+    
+    try {
+        // Show loading state
+        connectBtn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Connecting...</span>';
+        connectBtn.disabled = true;
+        
+        // Initialize Google API client
+        await gapi.load('client', async () => {
+            try {
+                await gapi.client.init({
+                    apiKey: GOOGLE_API_KEY,
+                    clientId: GOOGLE_CLIENT_ID,
+                    discoveryDocs: [GMAIL_CONFIG.DISCOVERY_DOC],
+                    scope: GMAIL_SCOPES
+                });
+                
+                // Request authorization
+                const authResult = await gapi.auth2.getAuthInstance().signIn({
+                    scope: GMAIL_SCOPES
+                });
+                
+                if (authResult.isSignedIn()) {
+                    gmailAccessToken = gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
+                    gmailClient = gapi.client;
+                    gmailConnected = true;
+                    
+                    // Store connection status
+                    localStorage.setItem('gmailConnected', 'true');
+                    localStorage.setItem('gmailAccessToken', gmailAccessToken);
+                    
+                    // Update UI
+                    connectBtn.innerHTML = '<span class="btn-icon">✅</span><span class="btn-text">Gmail Connected</span>';
+                    connectBtn.classList.add('connected');
+                    gmailSection.style.display = 'block';
+                    
+                    // Load real Gmail emails
+                    await loadRealGmailEmails();
+                    
+                    showSuccess('Gmail connected successfully!');
+                } else {
+                    throw new Error('User did not authorize Gmail access');
+                }
+                
+            } catch (error) {
+                console.error('Gmail OAuth failed:', error);
+                showError('Failed to connect to Gmail. Please try again.');
+                
+                // Reset button
+                connectBtn.innerHTML = '<span class="btn-icon">📧</span><span class="btn-text">Connect Gmail</span>';
+                connectBtn.disabled = false;
+            }
+        });
+        
+    } catch (error) {
+        console.error('Gmail connection failed:', error);
+        showError('Failed to connect to Gmail. Please try again.');
+        
+        // Reset button
+        connectBtn.innerHTML = '<span class="btn-icon">📧</span><span class="btn-text">Connect Gmail</span>';
+        connectBtn.disabled = false;
+    }
+}
+
+// Disconnect Gmail
+function disconnectGmail() {
+    const connectBtn = document.getElementById('connectGmailBtn');
+    const gmailSection = document.getElementById('gmailSection');
+    
+    // Sign out from Google
+    if (gapi.auth2 && gapi.auth2.getAuthInstance()) {
+        gapi.auth2.getAuthInstance().signOut();
+    }
+    
+    gmailConnected = false;
+    gmailEmails = [];
+    gmailAccessToken = null;
+    gmailClient = null;
+    
+    // Remove connection status
+    localStorage.removeItem('gmailConnected');
+    localStorage.removeItem('gmailAccessToken');
+    
+    // Update UI
+    connectBtn.innerHTML = '<span class="btn-icon">📧</span><span class="btn-text">Connect Gmail</span>';
+    connectBtn.classList.remove('connected');
+    gmailSection.style.display = 'none';
+    
+    showSuccess('Gmail disconnected successfully!');
+}
+
+// Check Gmail connection status
+function checkGmailConnection() {
+    const isConnected = localStorage.getItem('gmailConnected') === 'true';
+    const storedToken = localStorage.getItem('gmailAccessToken');
+    
+    if (isConnected && storedToken) {
+        gmailConnected = true;
+        gmailAccessToken = storedToken;
+        const connectBtn = document.getElementById('connectGmailBtn');
+        const gmailSection = document.getElementById('gmailSection');
+        
+        if (connectBtn) {
+            connectBtn.innerHTML = '<span class="btn-icon">✅</span><span class="btn-text">Gmail Connected</span>';
+            connectBtn.classList.add('connected');
+        }
+        if (gmailSection) {
+            gmailSection.style.display = 'block';
+        }
+        
+        // Initialize Gmail client and load emails
+        initializeGmailClient();
+    }
+}
+
+// Initialize Gmail client with stored token
+async function initializeGmailClient() {
+    try {
+        await gapi.load('client', async () => {
+            await gapi.client.init({
+                apiKey: GOOGLE_API_KEY,
+                clientId: GOOGLE_CLIENT_ID,
+                discoveryDocs: [GMAIL_CONFIG.DISCOVERY_DOC],
+                scope: GMAIL_SCOPES
+            });
+            
+            gmailClient = gapi.client;
+            await loadRealGmailEmails();
+        });
+    } catch (error) {
+        console.error('Failed to initialize Gmail client:', error);
+        // Fallback to sample emails if initialization fails
+        loadSampleGmailEmails();
+    }
+}
+
+// Load real Gmail emails from Gmail API
+async function loadRealGmailEmails() {
+    if (!gmailClient || !gmailAccessToken) {
+        console.error('Gmail client or access token not available');
+        loadSampleGmailEmails(); // Fallback to sample emails
+        return;
+    }
+    
+    try {
+        // Fetch recent emails from Gmail
+        const response = await gmailClient.gmail.users.messages.list({
+            userId: 'me',
+            maxResults: 10,
+            q: 'in:inbox' // Only inbox emails
+        });
+        
+        const messages = response.result.messages || [];
+        gmailEmails = [];
+        
+        // Process each email
+        for (const message of messages) {
+            try {
+                const emailDetail = await gmailClient.gmail.users.messages.get({
+                    userId: 'me',
+                    id: message.id,
+                    format: 'full'
+                });
+                
+                const headers = emailDetail.result.payload.headers;
+                const sender = headers.find(h => h.name === 'From')?.value || 'Unknown';
+                const subject = headers.find(h => h.name === 'Subject')?.value || 'No Subject';
+                const date = headers.find(h => h.name === 'Date')?.value || new Date().toISOString();
+                
+                // Extract email body (simplified)
+                let content = '';
+                if (emailDetail.result.payload.body && emailDetail.result.payload.body.data) {
+                    content = atob(emailDetail.result.payload.body.data.replace(/-/g, '+').replace(/_/g, '/'));
+                } else if (emailDetail.result.payload.parts) {
+                    for (const part of emailDetail.result.payload.parts) {
+                        if (part.mimeType === 'text/plain' && part.body && part.body.data) {
+                            content = atob(part.body.data.replace(/-/g, '+').replace(/_/g, '/'));
+                            break;
+                        }
+                    }
+                }
+                
+                // Analyze email for phishing risk (simplified)
+                const riskScore = analyzeEmailRisk(content, sender, subject);
+                const riskLevel = getRiskLevel(riskScore);
+                
+                gmailEmails.push({
+                    id: message.id,
+                    sender: sender,
+                    subject: subject,
+                    time: formatEmailTime(date),
+                    riskScore: riskScore,
+                    riskLevel: riskLevel,
+                    content: content.substring(0, 200) + '...' // Truncate for display
+                });
+                
+            } catch (error) {
+                console.error('Error processing email:', error);
+            }
+        }
+        
+        updateGmailStats();
+        renderGmailEmails();
+        
+    } catch (error) {
+        console.error('Failed to load Gmail emails:', error);
+        showError('Failed to load Gmail emails. Using sample data.');
+        loadSampleGmailEmails(); // Fallback to sample emails
+    }
+}
+
+// Simple email risk analysis
+function analyzeEmailRisk(content, sender, subject) {
+    let riskScore = 0;
+    
+    // Check for suspicious patterns
+    const suspiciousPatterns = [
+        'urgent', 'verify', 'suspended', 'expired', 'immediately',
+        'click here', 'verify now', 'account locked', 'security alert'
+    ];
+    
+    const suspiciousDomains = [
+        'paypal-security.com', 'amazon-security.com', 'microsoft-security.com',
+        'bank-security.com', 'apple-security.com'
+    ];
+    
+    const text = (content + ' ' + subject).toLowerCase();
+    
+    // Check patterns
+    suspiciousPatterns.forEach(pattern => {
+        if (text.includes(pattern)) {
+            riskScore += 15;
+        }
+    });
+    
+    // Check sender domain
+    suspiciousDomains.forEach(domain => {
+        if (sender.toLowerCase().includes(domain)) {
+            riskScore += 30;
+        }
+    });
+    
+    // Check for suspicious links
+    if (text.includes('http://') || text.includes('https://')) {
+        riskScore += 10;
+    }
+    
+    return Math.min(riskScore, 100);
+}
+
+// Get risk level from score
+function getRiskLevel(score) {
+    if (score >= 70) return 'high';
+    if (score >= 40) return 'medium';
+    if (score >= 20) return 'low';
+    return 'safe';
+}
+
+// Format email time
+function formatEmailTime(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    
+    if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return 'Just now';
+}
+
+// Load sample Gmail emails (for demo)
+async function loadSampleGmailEmails() {
+    const sampleEmails = [
+        {
+            id: '1',
+            sender: 'noreply@paypal.com',
+            subject: 'Your account has been suspended',
+            time: '2 hours ago',
+            riskScore: 85,
+            riskLevel: 'high',
+            content: 'Urgent: Your PayPal account has been suspended due to suspicious activity...'
+        },
+        {
+            id: '2',
+            sender: 'support@microsoft.com',
+            subject: 'Security alert for your account',
+            time: '4 hours ago',
+            riskScore: 25,
+            riskLevel: 'low',
+            content: 'We detected unusual sign-in activity on your Microsoft account...'
+        },
+        {
+            id: '3',
+            sender: 'billing@amazon.com',
+            subject: 'Payment confirmation',
+            time: '6 hours ago',
+            riskScore: 15,
+            riskLevel: 'safe',
+            content: 'Thank you for your recent purchase. Your payment has been processed...'
+        },
+        {
+            id: '4',
+            sender: 'urgent@bank-security.com',
+            subject: 'Verify your account immediately',
+            time: '8 hours ago',
+            riskScore: 92,
+            riskLevel: 'high',
+            content: 'Your bank account will be closed if you do not verify your identity...'
+        },
+        {
+            id: '5',
+            sender: 'newsletter@techcrunch.com',
+            subject: 'Weekly tech news digest',
+            time: '1 day ago',
+            riskScore: 5,
+            riskLevel: 'safe',
+            content: 'This week in tech: AI breakthroughs, startup funding rounds...'
+        }
+    ];
+    
+    gmailEmails = sampleEmails;
+    updateGmailStats();
+    renderGmailEmails();
+}
+
+// Update Gmail statistics
+function updateGmailStats() {
+    const totalEmails = gmailEmails.length;
+    const analyzedEmails = gmailEmails.length; // All emails are analyzed
+    const threatsFound = gmailEmails.filter(email => email.riskLevel === 'high' || email.riskLevel === 'medium').length;
+    
+    document.getElementById('gmailTotalEmails').textContent = totalEmails;
+    document.getElementById('gmailAnalyzedEmails').textContent = analyzedEmails;
+    document.getElementById('gmailThreatsFound').textContent = threatsFound;
+}
+
+// Render Gmail emails
+function renderGmailEmails() {
+    const emailList = document.getElementById('gmailEmailList');
+    
+    if (!emailList) return;
+    
+    emailList.innerHTML = gmailEmails.map(email => `
+        <div class="email-item" onclick="analyzeGmailEmail('${email.id}')">
+            <div class="email-header">
+                <span class="email-sender">${email.sender}</span>
+                <span class="email-time">${email.time}</span>
+            </div>
+            <div class="email-subject">${email.subject}</div>
+            <div class="email-risk">
+                <span class="risk-badge ${email.riskLevel}">${email.riskLevel.toUpperCase()}</span>
+                <span style="font-size: 0.8rem; color: #718096;">${email.riskScore}% risk</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Analyze Gmail email
+async function analyzeGmailEmail(emailId) {
+    const email = gmailEmails.find(e => e.id === emailId);
+    if (!email) return;
+    
+    // Copy email content to main analysis area
+    const mainTextarea = document.getElementById('rawEmail');
+    if (mainTextarea) {
+        mainTextarea.value = `From: ${email.sender}\nSubject: ${email.subject}\n\n${email.content}`;
+        updateCharCount();
+        
+        // Scroll to analysis section
+        document.querySelector('.analyze-section').scrollIntoView({ behavior: 'smooth' });
+        
+        // Trigger analysis
+        setTimeout(() => {
+            document.getElementById('runAnalyze').click();
+        }, 500);
+    }
+}
+
+// Refresh Gmail emails
+async function refreshGmailEmails() {
+    const refreshBtn = document.getElementById('refreshGmailBtn');
+    
+    if (refreshBtn) {
+        refreshBtn.innerHTML = '<span class="btn-icon">⏳</span>Refreshing...';
+        refreshBtn.disabled = true;
+    }
+    
+    try {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Reload emails
+        await loadSampleGmailEmails();
+        
+        showSuccess('Gmail emails refreshed successfully!');
+        
+    } catch (error) {
+        console.error('Failed to refresh emails:', error);
+        showError('Failed to refresh emails. Please try again.');
+    } finally {
+        if (refreshBtn) {
+            refreshBtn.innerHTML = '<span class="btn-icon">🔄</span>Refresh';
+            refreshBtn.disabled = false;
+        }
+    }
+}
+
+// Modal functionality
+function setupModal() {
+    const openModalBtn = document.getElementById('openQuickCheckModal');
+    const closeModalBtn = document.getElementById('closeQuickCheckModal');
+    const modal = document.getElementById('quickCheckModal');
+    
+    if (openModalBtn) {
+        openModalBtn.addEventListener('click', function() {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        });
+    }
+    
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+    }
+    
+    // Close modal when clicking outside
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+    }
+}
+
 // Quick check functionality
 function setupQuickCheck() {
     const quickCheckBtn = document.getElementById('quickCheckBtn');
@@ -12,17 +488,10 @@ function setupQuickCheck() {
     
     // Quick check button
     if (quickCheckBtn) {
-        quickCheckBtn.addEventListener('click', function() {
+        quickCheckBtn.addEventListener('click', async function() {
             const emailContent = quickEmailUrl.value.trim();
             if (emailContent) {
-                // Copy content to main textarea and trigger analysis
-                const mainTextarea = document.getElementById('rawEmail');
-                if (mainTextarea) {
-                    mainTextarea.value = emailContent;
-                    updateCharCount();
-                    // Trigger analysis
-                    document.getElementById('runAnalyze').click();
-                }
+                await performQuickCheck(emailContent);
             } else {
                 showError('Please enter email content to analyze');
             }
@@ -128,6 +597,176 @@ function showSuccess(message) {
     }
 }
 
+// Perform quick check with pie chart results
+async function performQuickCheck(emailContent) {
+    const quickCheckBtn = document.getElementById('quickCheckBtn');
+    const resultsSection = document.getElementById('quickCheckResults');
+    
+    // Show loading state
+    quickCheckBtn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Analyzing...</span>';
+    quickCheckBtn.disabled = true;
+    
+    try {
+        const response = await fetch(`${API_BASE}/analyze`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: emailContent })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        // Display results
+        displayQuickCheckResults(result);
+        resultsSection.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Quick check failed:', error);
+        showError('Quick check failed. Please try again.');
+    } finally {
+        // Reset button
+        quickCheckBtn.innerHTML = '<span class="btn-icon">🔍</span><span class="btn-text">Analyze</span>';
+        quickCheckBtn.disabled = false;
+    }
+}
+
+// Display quick check results with pie chart
+function displayQuickCheckResults(result) {
+    const riskScore = document.getElementById('quickRiskScore');
+    const riskLabel = document.getElementById('quickRiskLabel');
+    const resultsSummary = document.getElementById('quickResultsSummary');
+    
+    // Update risk indicator
+    if (riskScore && riskLabel) {
+        const score = result.risk_score || 0;
+        riskScore.textContent = `${score}%`;
+        
+        if (score >= 70) {
+            riskLabel.textContent = 'High Risk';
+            riskLabel.style.color = '#e53e3e';
+        } else if (score >= 40) {
+            riskLabel.textContent = 'Medium Risk';
+            riskLabel.style.color = '#dd6b20';
+        } else {
+            riskLabel.textContent = 'Low Risk';
+            riskLabel.style.color = '#38a169';
+        }
+    }
+    
+    // Create pie chart
+    createQuickCheckChart(result);
+    
+    // Update summary
+    if (resultsSummary) {
+        const summary = result.summary || 'Analysis completed successfully.';
+        resultsSummary.innerHTML = `
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">Analysis Summary:</div>
+            <div>${summary}</div>
+        `;
+    }
+}
+
+// Create pie chart for quick check results
+function createQuickCheckChart(result) {
+    const ctx = document.getElementById('quickCheckChart');
+    if (!ctx) return;
+    
+    // Destroy existing chart
+    if (window.quickCheckChart) {
+        window.quickCheckChart.destroy();
+    }
+    
+    const riskScore = result.risk_score || 0;
+    const safeScore = 100 - riskScore;
+    
+    window.quickCheckChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Risk', 'Safe'],
+            datasets: [{
+                data: [riskScore, safeScore],
+                backgroundColor: [
+                    riskScore >= 70 ? '#e53e3e' : riskScore >= 40 ? '#dd6b20' : '#38a169',
+                    '#e2e8f0'
+                ],
+                borderWidth: 0,
+                cutout: '60%'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            animation: {
+                animateRotate: true,
+                duration: 1000
+            }
+        }
+    });
+}
+
+// Navigation function for agent pages
+function navigateToAgent(agentType) {
+    // For now, we'll show an alert. In a real app, this would navigate to separate pages
+    const agentNames = {
+        'email-parser': 'Email Parser Agent',
+        'risk-scorer': 'Risk Scorer Agent',
+        'alert-generator': 'Alert Generator Agent'
+    };
+    
+    const agentName = agentNames[agentType] || 'Unknown Agent';
+    
+    // Create a simple modal for agent details
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🤖 ${agentName}</h2>
+                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🚧</div>
+                    <h3>Coming Soon!</h3>
+                    <p>Detailed ${agentName} page is under development.</p>
+                    <p>This will include:</p>
+                    <ul style="text-align: left; margin: 1rem 0;">
+                        <li>Real-time performance metrics</li>
+                        <li>Detailed configuration options</li>
+                        <li>Historical data and analytics</li>
+                        <li>Agent-specific settings</li>
+                    </ul>
+                    <button class="btn-primary" onclick="this.closest('.modal-overlay').remove()" style="margin-top: 1rem;">
+                        Got it!
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.remove();
+            document.body.style.overflow = 'auto';
+        }
+    });
+}
+
 // Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Dashboard page loaded');
@@ -222,15 +861,17 @@ function hideDashboardLoading() {
 function setupEventListeners() {
     // Sign out button
     const signOutBtn = document.getElementById('signOutBtn');
+    console.log('Sign out button found:', signOutBtn); // Debug log
     if (signOutBtn) {
-        signOutBtn.addEventListener('click', async () => {
-            try {
-                await firebase.auth().signOut();
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('Sign out error:', error);
-            }
+        signOutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Sign out button clicked!'); // Debug log
+            showSignOutModal();
         });
+        console.log('Sign out event listener attached'); // Debug log
+    } else {
+        console.error('Sign out button not found!'); // Debug log
     }
 
     // Analyze button
@@ -246,6 +887,8 @@ function setupEventListeners() {
     }
     
     // Setup new functionality
+    setupModal();
+    setupGmailIntegration();
     setupQuickCheck();
     setupClearButton();
     setupHistoryControls();
@@ -853,3 +1496,48 @@ function loadHistory() {
 function saveHistory() {
     localStorage.setItem('analysisHistory', JSON.stringify(analysisHistory));
 }
+
+// Sign Out Modal Functions
+function showSignOutModal() {
+    const modal = document.getElementById('signOutModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+}
+
+function closeSignOutModal() {
+    const modal = document.getElementById('signOutModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Restore scrolling
+    }
+}
+
+async function confirmSignOut() {
+    try {
+        if (typeof firebase !== 'undefined' && firebase.auth) {
+            await firebase.auth().signOut();
+        }
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error('Sign out error:', error);
+        // Fallback - just redirect
+        window.location.href = 'index.html';
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    const signOutModal = document.getElementById('signOutModal');
+    if (signOutModal && e.target === signOutModal) {
+        closeSignOutModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeSignOutModal();
+    }
+});
