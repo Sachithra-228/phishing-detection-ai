@@ -7,7 +7,12 @@ document.addEventListener('DOMContentLoaded', function() {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         console.log('User already authenticated:', user.email);
-        window.location.href = 'dashboard.html';
+        // Check if we're on the root landing page or frontend landing page
+        if (window.location.pathname === '/' || window.location.pathname.endsWith('/index.html')) {
+          window.location.href = 'frontend/dashboard.html';
+        } else {
+          window.location.href = 'dashboard.html';
+        }
       }
     });
   }

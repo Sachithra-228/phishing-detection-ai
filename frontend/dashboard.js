@@ -2,6 +2,7 @@
 let riskChart = null;
 const API_BASE = 'http://localhost:3000';
 let dashboardInitialized = false;
+let authStateChecked = false;
 
 // Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -10,6 +11,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if user is authenticated
     if (typeof firebase !== 'undefined' && firebase.auth) {
         firebase.auth().onAuthStateChanged((user) => {
+            if (authStateChecked) return; // Prevent multiple checks
+            authStateChecked = true;
+            
             if (user && !dashboardInitialized) {
                 console.log('User authenticated:', user.email);
                 dashboardInitialized = true; // Prevent multiple initializations
@@ -17,14 +21,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 initializeDashboard();
             } else if (!user) {
                 console.log('No user authenticated, redirecting to landing page');
-                window.location.href = 'index.html';
+                window.location.href = '../index.html';
             }
         });
     } else {
         console.error('Firebase not loaded');
         // Redirect to landing page if Firebase fails
         setTimeout(() => {
-            window.location.href = 'index.html';
+            window.location.href = '../index.html';
         }, 2000);
     }
 });
@@ -81,10 +85,22 @@ function setupEventListeners() {
     if (signOutBtn) {
         signOutBtn.addEventListener('click', async () => {
             try {
+                // Prevent multiple clicks
+                signOutBtn.disabled = true;
+                signOutBtn.textContent = 'Signing out...';
+                
                 await firebase.auth().signOut();
-                window.location.href = 'index.html';
+                
+                // Clear dashboard state
+                dashboardInitialized = false;
+                authStateChecked = false;
+                
+                // Redirect to landing page
+                window.location.href = '../index.html';
             } catch (error) {
                 console.error('Sign out error:', error);
+                signOutBtn.disabled = false;
+                signOutBtn.textContent = 'Sign Out';
             }
         });
     }
