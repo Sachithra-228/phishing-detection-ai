@@ -2,7 +2,6 @@
 let riskChart = null;
 const API_BASE = 'http://localhost:3000';
 let dashboardInitialized = false;
-let authStateChecked = false;
 
 // Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -11,9 +10,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if user is authenticated
     if (typeof firebase !== 'undefined' && firebase.auth) {
         firebase.auth().onAuthStateChanged((user) => {
-            if (authStateChecked) return; // Prevent multiple checks
-            authStateChecked = true;
-            
             if (user && !dashboardInitialized) {
                 console.log('User authenticated:', user.email);
                 dashboardInitialized = true; // Prevent multiple initializations
@@ -21,14 +17,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 initializeDashboard();
             } else if (!user) {
                 console.log('No user authenticated, redirecting to landing page');
-                window.location.href = '../index.html';
+                window.location.href = 'index.html';
             }
         });
+        
+        // Fallback timeout in case auth state doesn't change
+        setTimeout(() => {
+            if (!dashboardInitialized && firebase.auth().currentUser) {
+                console.log('Fallback initialization for authenticated user');
+                dashboardInitialized = true;
+                updateUserInfo(firebase.auth().currentUser);
+                initializeDashboard();
+            }
+        }, 3000);
     } else {
         console.error('Firebase not loaded');
         // Redirect to landing page if Firebase fails
         setTimeout(() => {
-            window.location.href = '../index.html';
+            window.location.href = 'index.html';
         }, 2000);
     }
 });
@@ -37,14 +43,16 @@ function updateUserInfo(user) {
     const userEmailEl = document.getElementById('userEmail');
     if (userEmailEl) {
         userEmailEl.textContent = user.email;
+        userEmailEl.style.color = '#ffffff';
+        userEmailEl.style.display = 'inline';
     }
 }
 
 function initializeDashboard() {
     console.log('Initializing dashboard...');
     
-    // Show loading state initially
-    showDashboardLoading();
+    // Hide loading state immediately
+    hideDashboardLoading();
     
     // Initialize charts
     initializeCharts();
@@ -57,11 +65,6 @@ function initializeDashboard() {
     
     // Set up event listeners
     setupEventListeners();
-    
-    // Hide loading state after a short delay
-    setTimeout(() => {
-        hideDashboardLoading();
-    }, 1000);
 }
 
 function showDashboardLoading() {
@@ -77,6 +80,18 @@ function hideDashboardLoading() {
     if (dashboard) {
         dashboard.style.opacity = '1';
     }
+    
+    // Hide loading text in header
+    const loadingText = document.querySelector('.loading-text');
+    if (loadingText) {
+        loadingText.style.display = 'none';
+    }
+    
+    // Show user email instead
+    const userEmail = document.getElementById('userEmail');
+    if (userEmail && userEmail.textContent) {
+        userEmail.style.display = 'inline';
+    }
 }
 
 function setupEventListeners() {
@@ -85,22 +100,10 @@ function setupEventListeners() {
     if (signOutBtn) {
         signOutBtn.addEventListener('click', async () => {
             try {
-                // Prevent multiple clicks
-                signOutBtn.disabled = true;
-                signOutBtn.textContent = 'Signing out...';
-                
                 await firebase.auth().signOut();
-                
-                // Clear dashboard state
-                dashboardInitialized = false;
-                authStateChecked = false;
-                
-                // Redirect to landing page
-                window.location.href = '../index.html';
+                window.location.href = 'index.html';
             } catch (error) {
                 console.error('Sign out error:', error);
-                signOutBtn.disabled = false;
-                signOutBtn.textContent = 'Sign Out';
             }
         });
     }

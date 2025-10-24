@@ -92,58 +92,58 @@ class RiskScorer:
         
     urls = parsed.get("urls", [])
     entities = parsed.get("entities", [])
+    
+    # Keyword-based features
+    features['suspicious_keyword_count'] = sum(1 for kw in SUSPICIOUS_KEYWORDS if kw in full_text)
+    features['suspicious_keyword_ratio'] = features['suspicious_keyword_count'] / max(len(full_text.split()), 1)
+    
+    # URL-based features
+    features['url_count'] = len(urls)
+    features['suspicious_domain_count'] = 0
+    features['suspicious_tld_count'] = 0
+    features['shortened_url_count'] = 0
+    features['lookalike_domain_count'] = 0
+    
+    for url_data in urls:
+        domain = url_data.get('domain', '').lower()
         
-        # Keyword-based features
-        features['suspicious_keyword_count'] = sum(1 for kw in SUSPICIOUS_KEYWORDS if kw in full_text)
-        features['suspicious_keyword_ratio'] = features['suspicious_keyword_count'] / max(len(full_text.split()), 1)
+        # Check for suspicious domains
+        if any(sd in domain for sd in SUSPICIOUS_DOMAINS):
+            features['suspicious_domain_count'] += 1
         
-        # URL-based features
-        features['url_count'] = len(urls)
-        features['suspicious_domain_count'] = 0
-        features['suspicious_tld_count'] = 0
-        features['shortened_url_count'] = 0
-        features['lookalike_domain_count'] = 0
+        # Check for suspicious TLDs
+        if any(tld in domain for tld in SUSPICIOUS_TLDS):
+            features['suspicious_tld_count'] += 1
         
-        for url_data in urls:
-            domain = url_data.get('domain', '').lower()
-            
-            # Check for suspicious domains
-            if any(sd in domain for sd in SUSPICIOUS_DOMAINS):
-                features['suspicious_domain_count'] += 1
-            
-            # Check for suspicious TLDs
-            if any(tld in domain for tld in SUSPICIOUS_TLDS):
-                features['suspicious_tld_count'] += 1
-            
-            # Check for shortened URLs
-            if url_data.get('is_shortened', False):
-                features['shortened_url_count'] += 1
-            
-            # Check for lookalike patterns
-            if any(re.search(pattern, domain) for pattern in LOOKALIKE_PATTERNS):
-                features['lookalike_domain_count'] += 1
+        # Check for shortened URLs
+        if url_data.get('is_shortened', False):
+            features['shortened_url_count'] += 1
         
-        # Entity-based features
-        features['entity_count'] = len(entities)
-        features['person_entity_count'] = sum(1 for e in entities if e.get('type') == 'PERSON')
-        features['org_entity_count'] = sum(1 for e in entities if e.get('type') == 'ORG')
-        
-        # Email structure features
-        features['has_html'] = parsed.get("metadata", {}).get("has_html", False)
-        features['is_multipart'] = parsed.get("metadata", {}).get("is_multipart", False)
-        features['attachment_count'] = parsed.get("metadata", {}).get("attachment_count", 0)
-        
-        # Text-based features
-        features['text_length'] = len(full_text)
-        features['exclamation_count'] = full_text.count('!')
-        features['question_count'] = full_text.count('?')
-        features['caps_ratio'] = sum(1 for c in full_text if c.isupper()) / max(len(full_text), 1)
-        
-        # Urgency indicators
-        urgency_words = ['urgent', 'immediately', 'asap', 'now', 'today', 'expires']
-        features['urgency_score'] = sum(1 for word in urgency_words if word in full_text)
-        
-        return features
+        # Check for lookalike patterns
+        if any(re.search(pattern, domain) for pattern in LOOKALIKE_PATTERNS):
+            features['lookalike_domain_count'] += 1
+    
+    # Entity-based features
+    features['entity_count'] = len(entities)
+    features['person_entity_count'] = sum(1 for e in entities if e.get('type') == 'PERSON')
+    features['org_entity_count'] = sum(1 for e in entities if e.get('type') == 'ORG')
+    
+    # Email structure features
+    features['has_html'] = parsed.get("metadata", {}).get("has_html", False)
+    features['is_multipart'] = parsed.get("metadata", {}).get("is_multipart", False)
+    features['attachment_count'] = parsed.get("metadata", {}).get("attachment_count", 0)
+    
+    # Text-based features
+    features['text_length'] = len(full_text)
+    features['exclamation_count'] = full_text.count('!')
+    features['question_count'] = full_text.count('?')
+    features['caps_ratio'] = sum(1 for c in full_text if c.isupper()) / max(len(full_text), 1)
+    
+    # Urgency indicators
+    urgency_words = ['urgent', 'immediately', 'asap', 'now', 'today', 'expires']
+    features['urgency_score'] = sum(1 for word in urgency_words if word in full_text)
+    
+    return features
     
     def extract_ml_features(self, parsed: Dict[str, Any]) -> np.ndarray:
         """Extract ML features using TF-IDF."""
