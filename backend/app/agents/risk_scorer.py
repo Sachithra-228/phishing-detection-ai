@@ -1,4 +1,3 @@
-
 from typing import Dict, Any, Tuple, List
 import re
 import numpy as np
@@ -102,161 +101,147 @@ class RiskScorer:
         features['suspicious_domain_count'] = 0
         features['suspicious_tld_count'] = 0
         features['shortened_url_count'] = 0
-        features['lookalike_domain_count'] = 0
         
         for url_data in urls:
-            domain = url_data.get('domain', '').lower()
-            
-            # Check for suspicious domains
-            if any(sd in domain for sd in SUSPICIOUS_DOMAINS):
+            domain = url_data.get("domain", "").lower()
+            if any(susp_domain in domain for susp_domain in SUSPICIOUS_DOMAINS):
                 features['suspicious_domain_count'] += 1
-            
-            # Check for suspicious TLDs
             if any(tld in domain for tld in SUSPICIOUS_TLDS):
                 features['suspicious_tld_count'] += 1
-            
-            # Check for shortened URLs
-            if url_data.get('is_shortened', False):
+            if url_data.get("is_shortened", False):
                 features['shortened_url_count'] += 1
-            
-            # Check for lookalike patterns
-            if any(re.search(pattern, domain) for pattern in LOOKALIKE_PATTERNS):
-                features['lookalike_domain_count'] += 1
+        
+        # Lookalike domain detection
+        features['lookalike_score'] = 0
+        for url_data in urls:
+            domain = url_data.get("domain", "")
+            for pattern in LOOKALIKE_PATTERNS:
+                if re.search(pattern, domain):
+                    features['lookalike_score'] += 1
         
         # Entity-based features
-        features['entity_count'] = len(entities)
-        features['person_entity_count'] = sum(1 for e in entities if e.get('type') == 'PERSON')
-        features['org_entity_count'] = sum(1 for e in entities if e.get('type') == 'ORG')
-        
-        # Email structure features
-        features['has_html'] = parsed.get("metadata", {}).get("has_html", False)
-        features['is_multipart'] = parsed.get("metadata", {}).get("is_multipart", False)
-        features['attachment_count'] = parsed.get("metadata", {}).get("attachment_count", 0)
+        features['email_count'] = sum(1 for ent in entities if ent.get("type") == "EMAIL")
+        features['phone_count'] = sum(1 for ent in entities if ent.get("type") == "PHONE")
+        features['money_count'] = sum(1 for ent in entities if ent.get("type") == "MONEY")
         
         # Text-based features
-        features['text_length'] = len(full_text)
         features['exclamation_count'] = full_text.count('!')
         features['question_count'] = full_text.count('?')
         features['caps_ratio'] = sum(1 for c in full_text if c.isupper()) / max(len(full_text), 1)
         
-        # Urgency indicators
-        urgency_words = ['urgent', 'immediately', 'asap', 'now', 'today', 'expires']
-        features['urgency_score'] = sum(1 for word in urgency_words if word in full_text)
+        # Length features
+        features['subject_length'] = len(subject)
+        features['body_length'] = len(body_text)
+        features['total_length'] = len(full_text)
         
         return features
     
-    def extract_ml_features(self, parsed: Dict[str, Any]) -> np.ndarray:
-        """Extract ML features using TF-IDF."""
-        text = f"{parsed.get('headers', {}).get('subject', '')} {parsed.get('body_text', '')}"
-        
-        if self.vectorizer is None:
-            return np.zeros(1000)  # Fallback
-        
+    def predict_ml_score(self, parsed: Dict[str, Any]) -> float:
+        """Get ML-based risk score."""
         try:
-            X = self.vectorizer.transform([text])
-            return X.toarray()[0]
+            # Combine subject and body for ML analysis
+            subject = parsed.get("headers", {}).get("subject", "")
+            body_text = parsed.get("body_text", "")
+            combined_text = f"{subject} {body_text}"
+            
+            # Transform text
+            X = self.vectorizer.transform([combined_text])
+            X_scaled = self.scaler.transform(X.toarray())
+            
+            # Get probability of phishing
+            prob = self.model.predict_proba(X_scaled)[0][1]  # Probability of class 1 (phishing)
+            return float(prob)
         except Exception:
-            return np.zeros(1000)
+            return 0.5  # Default neutral score
     
-    def combine_features(self, rule_features: Dict[str, float], ml_features: np.ndarray) -> np.ndarray:
-        """Combine rule-based and ML features."""
-        # Convert rule features to array
-        rule_array = np.array(list(rule_features.values()))
-        
-        # Combine features
-        combined = np.concatenate([rule_array, ml_features])
-        
-        # Pad or truncate to fixed size
-        target_size = 1100  # Adjust based on your feature count
-        if len(combined) < target_size:
-            combined = np.pad(combined, (0, target_size - len(combined)))
-        elif len(combined) > target_size:
-            combined = combined[:target_size]
-        
-        return combined
-    
-    def predict_risk(self, parsed: Dict[str, Any]) -> Tuple[float, str, str]:
-        """Predict phishing risk using hybrid approach."""
-        # Extract features
+    def calculate_final_score(self, parsed: Dict[str, Any]) -> Tuple[float, str, str]:
+        """Calculate final risk score combining ML and rule-based features."""
+        # Get rule-based features
         rule_features = self.extract_rule_features(parsed)
-        ml_features = self.extract_ml_features(parsed)
-        combined_features = self.combine_features(rule_features, ml_features)
         
-        # Get ML prediction
-        if self.model is not None and self.scaler is not None:
-            try:
-                X_scaled = self.scaler.transform(combined_features.reshape(1, -1))
-                ml_score = self.model.predict_proba(X_scaled)[0][1]  # Probability of phishing
-            except Exception:
-                ml_score = 0.5  # Fallback
-        else:
-            ml_score = 0.5
+        # Get ML score
+        ml_score = self.predict_ml_score(parsed)
         
-        # Calculate rule-based score
+        # Rule-based scoring
         rule_score = 0.0
+        reasons = []
         
-        # Keyword penalty
-        rule_score += min(rule_features['suspicious_keyword_count'] * 0.1, 0.4)
+        # Keyword-based scoring
+        if rule_features['suspicious_keyword_count'] > 0:
+            rule_score += 0.2 * min(rule_features['suspicious_keyword_count'], 5)
+            reasons.append(f"Suspicious keywords detected ({rule_features['suspicious_keyword_count']})")
         
-        # URL penalties
-        rule_score += min(rule_features['suspicious_domain_count'] * 0.3, 0.3)
-        rule_score += min(rule_features['suspicious_tld_count'] * 0.2, 0.2)
-        rule_score += min(rule_features['lookalike_domain_count'] * 0.15, 0.15)
+        # URL-based scoring
+        if rule_features['suspicious_domain_count'] > 0:
+            rule_score += 0.3 * rule_features['suspicious_domain_count']
+            reasons.append(f"Suspicious domains detected ({rule_features['suspicious_domain_count']})")
         
-        # Structure penalties
-        if rule_features['has_html'] and rule_features['url_count'] > 0:
+        if rule_features['suspicious_tld_count'] > 0:
+            rule_score += 0.2 * rule_features['suspicious_tld_count']
+            reasons.append(f"Suspicious TLDs detected ({rule_features['suspicious_tld_count']})")
+        
+        if rule_features['shortened_url_count'] > 0:
+            rule_score += 0.1 * rule_features['shortened_url_count']
+            reasons.append(f"Shortened URLs detected ({rule_features['shortened_url_count']})")
+        
+        # Lookalike scoring
+        if rule_features['lookalike_score'] > 0:
+            rule_score += 0.2 * rule_features['lookalike_score']
+            reasons.append(f"Lookalike domains detected ({rule_features['lookalike_score']})")
+        
+        # Entity-based scoring
+        if rule_features['money_count'] > 0:
+            rule_score += 0.15 * rule_features['money_count']
+            reasons.append(f"Money amounts mentioned ({rule_features['money_count']})")
+        
+        # Text-based scoring
+        if rule_features['exclamation_count'] > 3:
             rule_score += 0.1
+            reasons.append("Excessive exclamation marks")
         
-        if rule_features['urgency_score'] > 2:
-            rule_score += 0.1
-        
-        # Caps ratio penalty
         if rule_features['caps_ratio'] > 0.3:
             rule_score += 0.1
+            reasons.append("Excessive capitalization")
         
-        rule_score = min(rule_score, 1.0)
+        # Combine ML and rule-based scores
+        final_score = (ml_score * 0.4) + (min(rule_score, 1.0) * 0.6)
+        final_score = min(final_score, 1.0)  # Cap at 1.0
         
-        # Combine ML and rule-based scores (weighted average)
-        final_score = 0.6 * ml_score + 0.4 * rule_score
-        
-        # Determine risk level and reason
-        if final_score >= 0.8:
+        # Determine risk level
+        if final_score >= 0.7:
             level = "High"
-            reason = "Multiple indicators suggest this is likely phishing"
         elif final_score >= 0.4:
             level = "Medium"
-            reason = "Some indicators suggest potential phishing risk"
         else:
             level = "Low"
-            reason = "Few or no indicators of phishing detected"
         
-        # Add specific reasons
-        reasons = []
-        if rule_features['suspicious_keyword_count'] > 0:
-            reasons.append(f"{rule_features['suspicious_keyword_count']} suspicious keywords")
-        if rule_features['suspicious_domain_count'] > 0:
-            reasons.append(f"{rule_features['suspicious_domain_count']} suspicious domains")
-        if rule_features['lookalike_domain_count'] > 0:
-            reasons.append(f"{rule_features['lookalike_domain_count']} lookalike domains")
-        if rule_features['urgency_score'] > 2:
-            reasons.append("high urgency language")
+        # Create reason string
+        if not reasons:
+            reasons = ["No suspicious patterns detected"]
         
-        if reasons:
-            reason += f" ({', '.join(reasons)})"
+        reason_text = "; ".join(reasons)
         
-        return final_score, level, reason
+        return final_score, level, reason_text
 
 # Global instance
-risk_scorer = RiskScorer()
+_scorer = None
+
+def get_scorer() -> RiskScorer:
+    """Get global scorer instance."""
+    global _scorer
+    if _scorer is None:
+        _scorer = RiskScorer()
+    return _scorer
 
 def score(parsed: Dict[str, Any]) -> Tuple[float, str, str]:
     """
-    Score email for phishing risk using hybrid ML + rules approach.
+    Score email for phishing risk.
     
     Args:
-        parsed: Parsed email data from email_parser
+        parsed: Parsed email data
         
     Returns:
         Tuple of (score, level, reason)
     """
-    return risk_scorer.predict_risk(parsed)
+    scorer = get_scorer()
+    return scorer.calculate_final_score(parsed)

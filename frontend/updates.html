@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Threat Updates - Phishing Detection AI</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=4">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
     <style>
         /* Full-page design - no containers */
@@ -696,20 +696,29 @@
             text-decoration: none !important;
             font-weight: 500 !important;
             padding: 0.5rem 1rem !important;
-            border-radius: 6px !important;
+            border-radius: 12px !important;
             transition: all 0.3s ease !important;
             background: none !important;
             border: none !important;
+            display: inline-block !important;
         }
         
         .nav-link:hover {
             color: #667eea !important;
-            background: #f7fafc !important;
+            background: rgba(102, 126, 234, 0.15) !important;
+            backdrop-filter: blur(15px) !important;
+            -webkit-backdrop-filter: blur(15px) !important;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3) !important;
+            border: 1px solid rgba(102, 126, 234, 0.2) !important;
         }
         
         .nav-link.active {
             color: #667eea !important;
-            background: #f7fafc !important;
+            background: rgba(102, 126, 234, 0.2) !important;
+            backdrop-filter: blur(15px) !important;
+            -webkit-backdrop-filter: blur(15px) !important;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4) !important;
+            border: 1px solid rgba(102, 126, 234, 0.3) !important;
         }
         
         /* Fix overlapping issues */

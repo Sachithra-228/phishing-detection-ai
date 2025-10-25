@@ -73,15 +73,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initializeChatBot() {
     const toggle = document.getElementById('chatBotToggle');
-    const window = document.getElementById('chatBotWindow');
-    const close = document.getElementById('chatBotClose');
+    const windowEl = document.getElementById('chatBotWindow');
+    const close = document.querySelector('.chatbot-close');
     const sendBtn = document.getElementById('chatBotSend');
     const input = document.getElementById('chatBotInput');
+
+    if (!toggle || !windowEl || !sendBtn || !input) {
+        return; // chatbot UI not present on this page
+    }
 
     // Toggle chat bot
     toggle.addEventListener('click', function() {
         chatBotOpen = !chatBotOpen;
-        window.style.display = chatBotOpen ? 'flex' : 'none';
+        windowEl.style.display = chatBotOpen ? 'flex' : 'none';
         
         if (chatBotOpen) {
             input.focus();
@@ -89,9 +93,9 @@ function initializeChatBot() {
     });
 
     // Close chat bot
-    close.addEventListener('click', function() {
+    if (close) close.addEventListener('click', function() {
         chatBotOpen = false;
-        window.style.display = 'none';
+        windowEl.style.display = 'none';
     });
 
     // Send message
@@ -104,9 +108,9 @@ function initializeChatBot() {
 
     // Close on outside click
     document.addEventListener('click', function(e) {
-        if (chatBotOpen && !window.contains(e.target) && !toggle.contains(e.target)) {
+        if (chatBotOpen && !windowEl.contains(e.target) && !toggle.contains(e.target)) {
             chatBotOpen = false;
-            window.style.display = 'none';
+            windowEl.style.display = 'none';
         }
     });
 }

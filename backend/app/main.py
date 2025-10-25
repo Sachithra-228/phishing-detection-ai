@@ -7,6 +7,13 @@ from app.agents.email_parser import parse_email
 from app.agents.risk_scorer import score
 from app.agents.alert_generator import make_alert
 from app.news import router as news_router
+from app.auth_routes import router as auth_router
+from app.history_routes import router as history_router
+from app.threats_routes import router as threats_router
+from app.reports_routes import router as reports_router
+from app.team_routes import router as team_router
+from app.integrations_routes import router as integrations_router
+from app.billing_routes import router as billing_router
 from datetime import datetime
 from typing import List, Optional
 import logging
@@ -21,16 +28,30 @@ app = FastAPI(
     version="1.0.0"
 )
 
+allowed_origins = [
+    "http://localhost:8081",
+    "http://127.0.0.1:8081",
+    "http://localhost",
+    "http://127.0.0.1",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify actual origins
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include news router
+# Include routers
 app.include_router(news_router, prefix="/api", tags=["news"])
+app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
+app.include_router(history_router, prefix="/api", tags=["history"])
+app.include_router(threats_router, prefix="/api", tags=["threats"])
+app.include_router(reports_router, prefix="/api", tags=["reports"])
+app.include_router(team_router, prefix="/api", tags=["team"])
+app.include_router(integrations_router, prefix="/api", tags=["integrations"])
+app.include_router(billing_router, prefix="/api", tags=["billing"])
 
 @app.get("/api/health")
 async def health():
@@ -42,7 +63,7 @@ async def health():
     }
 
 @app.post("/api/analyze", response_model=AnalyzeResponse)
-async def analyze(payload: AnalyzeRequest, db=Depends(get_db)):
+async def analyze(payload: AnalyzeRequest, db=Depends(get_db), user_id: Optional[str] = None):
     """
     Analyze email for phishing risk.
     
@@ -73,12 +94,54 @@ async def analyze(payload: AnalyzeRequest, db=Depends(get_db)):
             "risk_level": level,
             "alert_summary": summary,
             "timestamp": datetime.utcnow(),
-            "user_id": None  # Will be added when user auth is implemented
+            "user_id": user_id
         }
         
         try:
             result = await db.emails.insert_one(email_record)
             logger.info(f"Email analysis stored with ID: {result.inserted_id}")
+            
+            # Also create history entry if user_id provided
+            if user_id:
+                from app.history_models import HistoryItemCreate, RiskLevel, EmailSource
+                
+                # Map risk level
+                risk_level_map = {
+                    "low": RiskLevel.LOW,
+                    "medium": RiskLevel.MEDIUM,
+                    "high": RiskLevel.HIGH
+                }
+                
+                history_item = HistoryItemCreate(
+                    user_id=user_id,
+                    email_subject=parsed.get("headers", {}).get("subject", "No Subject"),
+                    email_sender=parsed.get("headers", {}).get("from", "Unknown Sender"),
+                    email_content=payload.email_text,
+                    risk_level=risk_level_map.get(level, RiskLevel.LOW),
+                    risk_score=score_value,
+                    analysis_result={
+                        "parsed_data": parsed,
+                        "risk_score": score_value,
+                        "risk_level": level,
+                        "alert_summary": summary
+                    },
+                    source=EmailSource.MANUAL,
+                    has_attachments=len(parsed.get("attachments", [])) > 0,
+                    attachment_count=len(parsed.get("attachments", [])),
+                    url_count=len(parsed.get("urls", [])),
+                    domain=parsed.get("sender_domain")
+                )
+                
+                history_collection = db.analysis_history
+                now = datetime.utcnow()
+                history_dict = history_item.dict()
+                history_dict.update({
+                    "created_at": now,
+                    "updated_at": now
+                })
+                await history_collection.insert_one(history_dict)
+                logger.info(f"History entry created for user: {user_id}")
+                
         except Exception as e:
             logger.warning(f"Failed to store email analysis: {e}")
             # Continue without failing the request

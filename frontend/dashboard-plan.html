@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan & Billing - Phishing Detection AI</title>
+    <link rel="stylesheet" href="styles.css?v=41">
+    <style>
+        .dash-shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+        .dash-sidebar { background:#1a2a48; border-right:1px solid rgba(255,255,255,0.14); padding:18px; position:sticky; top:0; height:100vh; }
+        .dash-brand { display:flex; align-items:center; gap:10px; color:#fff; font-weight:800; letter-spacing:.2px; }
+        .dash-nav { margin-top:18px; display:flex; flex-direction:column; gap:4px; }
+        .dash-link { color:#EAF1FB; padding:10px 12px; border-radius:10px; text-decoration:none; display:flex; align-items:center; gap:10px; border:1px solid transparent; }
+        .dash-link:hover { background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.14); }
+        .dash-link.active { background:rgba(255,255,255,0.10); border-color:#4F709C; box-shadow:0 0 0 2px rgba(79,112,156,0.35) inset; color:#fff; }
+        .dash-hero { background:#213555; border-bottom:1px solid rgba(255,255,255,0.14); padding:24px 24px; color:#fff; }
+        .dash-hero .subtitle { color:#EAF1FB; opacity:.95; margin-top:6px; }
+        @media (max-width: 900px){ .dash-shell{ grid-template-columns: 1fr; } .dash-sidebar{ display:none; } }
+
+        /* Plan & Billing page scoped styles */
+        .current-plan-section{ background:rgba(33,53,85,0.95); border:1px solid rgba(255,255,255,0.14); border-radius:12px; padding:24px; margin-bottom:24px; }
+        .plan-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:16px; }
+        .plan-info{ display:flex; align-items:center; gap:16px; }
+        .plan-info h2{ color:#fff; margin:0; font-size:1.5rem; }
+        .plan-badge{ padding:6px 12px; border-radius:999px; font-size:.8rem; font-weight:700; text-transform:uppercase; }
+        .plan-badge.pro{ background:rgba(79,112,156,0.2); color:#9db4d4; }
+        .plan-actions{ display:flex; gap:12px; }
+        .btn-primary{ background:#4F709C; color:#fff; border:1px solid #4F709C; padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:600; }
+        .btn-secondary{ background:rgba(255,255,255,0.08); color:#EAF1FB; border:1px solid rgba(255,255,255,0.18); padding:10px 16px; border-radius:8px; cursor:pointer; font-weight:600; }
+        .btn-primary:hover{ background:#3a5a80; border-color:#3a5a80; }
+        .btn-secondary:hover{ background:rgba(255,255,255,0.12); }
+
+        .plan-details-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:16px; }
+        .plan-detail-card{ background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:16px; display:flex; align-items:flex-start; gap:12px; }
+        .detail-icon{ font-size:1.5rem; }
+        .detail-content{ flex:1; }
+        .detail-value{ color:#fff; font-size:1.2rem; font-weight:700; margin-bottom:4px; }
+        .detail-label{ color:#EAF1FB; font-size:.9rem; margin-bottom:4px; }
+        .detail-meta{ color:#9fb4d3; font-size:.8rem; margin-bottom:8px; }
+        .detail-progress{ display:flex; align-items:center; gap:8px; }
+        .progress-bar{ flex:1; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; }
+        .progress-fill{ height:100%; background:#4F709C; border-radius:3px; transition:width 0.3s ease; }
+        .progress-text{ color:#9fb4d3; font-size:.8rem; }
+
+        .usage-analytics-section{ background:rgba(33,53,85,0.95); border:1px solid rgba(255,255,255,0.14); border-radius:12px; padding:24px; margin-bottom:24px; }
+        .analytics-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:16px; }
+        .analytics-header h2{ color:#fff; margin:0; font-size:1.5rem; }
+        .analytics-period{ display:flex; align-items:center; gap:8px; }
+        .period-select{ background:rgba(255,255,255,0.08); color:#EAF1FB; border:1px solid rgba(255,255,255,0.18); border-radius:6px; padding:6px 10px; }
+
+        .analytics-grid{ display:grid; grid-template-columns:2fr 1fr; gap:24px; margin-bottom:20px; }
+        .analytics-chart-container{ background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:20px; }
+        .analytics-chart-container h3{ color:#fff; margin:0 0 16px 0; font-size:1.1rem; }
+        .usage-breakdown{ background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:20px; }
+        .usage-breakdown h3{ color:#fff; margin:0 0 16px 0; font-size:1.1rem; }
+        .breakdown-items{ display:flex; flex-direction:column; gap:12px; }
+        .breakdown-item{ display:flex; align-items:center; justify-content:space-between; }
+        .breakdown-label{ display:flex; align-items:center; gap:8px; color:#EAF1FB; font-size:.9rem; }
+        .breakdown-dot{ width:8px; height:8px; border-radius:50%; }
+        .breakdown-dot.high{ background:#dc2626; }
+        .breakdown-dot.medium{ background:#d97706; }
+        .breakdown-dot.low{ background:#059669; }
+        .breakdown-value{ color:#fff; font-weight:600; }
+        .breakdown-percent{ color:#9fb4d3; font-size:.8rem; }
+
+        .usage-forecast{ margin-top:20px; }
+        .forecast-card{ background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:16px; display:flex; align-items:flex-start; gap:12px; }
+        .forecast-icon{ font-size:1.5rem; }
+        .forecast-content{ flex:1; }
+        .forecast-title{ color:#fff; font-weight:600; margin-bottom:6px; }
+        .forecast-text{ color:#EAF1FB; margin-bottom:6px; }
+        .forecast-recommendation{ color:#9fb4d3; font-size:.9rem; }
+
+        .plan-comparison-section{ background:rgba(33,53,85,0.95); border:1px solid rgba(255,255,255,0.14); border-radius:12px; padding:24px; margin-bottom:24px; }
+        .comparison-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:16px; }
+        .comparison-header h2{ color:#fff; margin:0; font-size:1.5rem; }
+        .billing-toggle{ display:flex; align-items:center; gap:12px; }
+        .toggle-label{ color:#EAF1FB; font-size:.9rem; }
+        .discount-badge{ background:#059669; color:#fff; padding:2px 6px; border-radius:4px; font-size:.7rem; margin-left:4px; }
+        .toggle-switch{ position:relative; display:inline-block; width:44px; height:24px; }
+        .toggle-switch input{ opacity:0; width:0; height:0; }
+        .toggle-slider{ position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,0.2); transition:.4s; border-radius:24px; }
+        .toggle-slider:before{ position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background:#fff; transition:.4s; border-radius:50%; }
+        input:checked + .toggle-slider{ background:#4F709C; }
+        input:checked + .toggle-slider:before{ transform:translateX(20px); }
+
+        .plans-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; }
+        .plan-card{ background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:24px; position:relative; transition:all 0.3s ease; }
+        .plan-card:hover{ transform:translateY(-4px); box-shadow:0 8px 25px rgba(0,0,0,0.15); }
+        .plan-card.current{ border-color:#4F709C; box-shadow:0 0 0 2px rgba(79,112,156,0.3); }
+        .plan-badge-ribbon{ position:absolute; top:-1px; right:20px; background:#4F709C; color:#fff; padding:4px 12px; border-radius:0 0 8px 8px; font-size:.8rem; font-weight:600; }
+        .plan-name{ color:#fff; font-size:1.3rem; font-weight:700; margin-bottom:8px; }
+        .plan-price{ margin-bottom:12px; }
+        .price-amount{ color:#fff; font-size:2rem; font-weight:700; }
+        .price-period{ color:#9fb4d3; font-size:1rem; }
+        .plan-description{ color:#EAF1FB; margin-bottom:20px; }
+        .plan-features{ margin-bottom:24px; }
+        .feature-item{ display:flex; align-items:center; gap:8px; margin-bottom:8px; color:#EAF1FB; }
+        .feature-item.disabled{ color:#6b7280; }
+        .feature-icon{ font-weight:700; }
+        .plan-button{ width:100%; padding:12px; border-radius:8px; font-weight:600; cursor:pointer; border:1px solid; }
+        .plan-button.primary{ background:#4F709C; color:#fff; border-color:#4F709C; }
+        .plan-button.secondary{ background:rgba(255,255,255,0.08); color:#EAF1FB; border-color:rgba(255,255,255,0.18); }
+        .plan-button:hover{ opacity:0.9; }
+
+        .billing-history-section, .payment-methods-section, .billing-settings-section{ background:rgba(33,53,85,0.95); border:1px solid rgba(255,255,255,0.14); border-radius:12px; padding:24px; margin-bottom:24px; }
+        .history-header, .payment-header, .settings-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:16px; }
+        .history-header h2, .payment-header h2, .settings-header h2{ color:#fff; margin:0; font-size:1.5rem; }
+        .history-actions{ display:flex; gap:12px; }
+
+        .billing-table-container{ overflow-x:auto; }
+        .billing-table{ width:100%; border-collapse:collapse; }
+        .billing-table th{ background:rgba(255,255,255,0.08); color:#EAF1FB; padding:12px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.1); font-weight:600; }
+        .billing-table td{ padding:12px; border-bottom:1px solid rgba(255,255,255,0.05); color:#EAF1FB; }
+        .billing-table tbody tr:hover{ background:rgba(255,255,255,0.04); }
+        .status-badge{ padding:4px 8px; border-radius:4px; font-size:.8rem; font-weight:600; }
+        .status-badge.paid{ background:rgba(16,185,129,0.2); color:#6ee7b7; }
+        .invoice-btn{ background:rgba(255,255,255,0.08); color:#EAF1FB; border:1px solid rgba(255,255,255,0.18); padding:4px 8px; border-radius:4px; cursor:pointer; font-size:.8rem; }
+        .invoice-btn:hover{ background:rgba(255,255,255,0.12); }
+
+        .payment-methods-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px; }
+        .payment-method-card{ background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:16px; }
+        .payment-method-card.primary{ border-color:#4F709C; }
+        .payment-method-header{ display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+        .card-icon{ font-size:1.5rem; }
+        .card-info{ flex:1; }
+        .card-type{ color:#fff; font-weight:600; }
+        .card-expiry{ color:#9fb4d3; font-size:.9rem; }
+        .primary-badge{ background:#4F709C; color:#fff; padding:2px 8px; border-radius:4px; font-size:.8rem; }
+        .payment-method-actions{ display:flex; gap:8px; }
+        .action-btn{ padding:6px 10px; border-radius:4px; cursor:pointer; border:1px solid; font-size:.8rem; font-weight:600; }
+        .action-btn{ background:rgba(255,255,255,0.08); color:#EAF1FB; border-color:rgba(255,255,255,0.18); }
+        .action-btn.danger{ background:rgba(239,68,68,0.2); color:#fca5a5; border-color:rgba(239,68,68,0.4); }
+        .action-btn:hover{ opacity:0.8; }
+
+        .settings-grid{ display:flex; flex-direction:column; gap:16px; }
+        .setting-item{ display:flex; align-items:center; justify-content:space-between; padding:16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:8px; }
+        .setting-info{ flex:1; }
+        .setting-title{ color:#fff; font-weight:600; margin-bottom:4px; }
+        .setting-description{ color:#9fb4d3; font-size:.9rem; }
+        .setting-value{ display:flex; align-items:center; gap:8px; }
+        .setting-input{ background:rgba(255,255,255,0.08); color:#EAF1FB; border:1px solid rgba(255,255,255,0.18); border-radius:4px; padding:6px 8px; }
+        .setting-btn{ background:rgba(255,255,255,0.08); color:#EAF1FB; border:1px solid rgba(255,255,255,0.18); padding:6px 12px; border-radius:4px; cursor:pointer; font-size:.9rem; }
+        .setting-btn:hover{ background:rgba(255,255,255,0.12); }
+
+        /* Modals */
+        .modal-overlay{ position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:1000; }
+        .plan-change-modal, .payment-method-modal{ background:#213555; border:1px solid rgba(255,255,255,0.2); border-radius:12px; max-width:600px; width:90vw; max-height:90vh; overflow:hidden; }
+        .modal-header{ display:flex; align-items:center; justify-content:space-between; padding:20px; border-bottom:1px solid rgba(255,255,255,0.1); }
+        .modal-header h2{ color:#fff; margin:0; }
+        .modal-close{ background:none; border:none; color:#EAF1FB; font-size:1.5rem; cursor:pointer; }
+        .modal-body{ padding:20px; max-height:60vh; overflow-y:auto; }
+        .plan-change-content{ display:flex; flex-direction:column; gap:20px; }
+        .change-summary{ display:flex; align-items:center; gap:16px; padding:16px; background:rgba(255,255,255,0.04); border-radius:8px; }
+        .current-plan, .new-plan{ flex:1; text-align:center; }
+        .plan-label{ color:#9fb4d3; font-size:.9rem; margin-bottom:4px; }
+        .plan-details{ color:#fff; font-weight:600; }
+        .change-arrow{ color:#4F709C; font-size:1.5rem; font-weight:700; }
+        .change-benefits h3{ color:#fff; margin-bottom:12px; }
+        .change-benefits ul{ color:#EAF1FB; padding-left:20px; }
+        .change-benefits li{ margin-bottom:6px; }
+        .billing-info{ background:rgba(255,255,255,0.04); border-radius:8px; padding:16px; }
+        .billing-item{ display:flex; justify-content:space-between; margin-bottom:8px; color:#EAF1FB; }
+        .billing-item.total{ border-top:1px solid rgba(255,255,255,0.1); padding-top:8px; font-weight:600; }
+        .billing-amount{ color:#fff; font-weight:600; }
+        .payment-form{ display:flex; flex-direction:column; gap:16px; }
+        .form-group{ display:flex; flex-direction:column; gap:6px; }
+        .form-group label{ color:#EAF1FB; font-weight:600; font-size:.9rem; }
+        .form-input{ background:rgba(255,255,255,0.08); color:#EAF1FB; border:1px solid rgba(255,255,255,0.18); border-radius:6px; padding:10px 12px; }
+        .form-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .checkbox-label{ display:flex; align-items:center; gap:8px; color:#EAF1FB; cursor:pointer; }
+        .modal-footer{ display:flex; gap:12px; padding:20px; border-top:1px solid rgba(255,255,255,0.1); justify-content:flex-end; }
+
+        @media (max-width: 768px){
+            .plan-header, .analytics-header, .comparison-header, .history-header, .payment-header{ flex-direction:column; align-items:stretch; }
+            .plan-actions, .history-actions{ justify-content:stretch; }
+            .analytics-grid{ grid-template-columns:1fr; }
+            .plans-grid{ grid-template-columns:1fr; }
+            .payment-methods-grid{ grid-template-columns:1fr; }
+            .setting-item{ flex-direction:column; align-items:stretch; gap:12px; }
+            .change-summary{ flex-direction:column; }
+            .form-row{ grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body class="dashboard-modern">
+    <div class="dash-shell">
+        <aside class="dash-sidebar">
+            <div class="dash-brand">Phishing Detection AI</div>
+            <nav class="dash-nav">
+                <a class="dash-link" href="dashboard.html">Overview</a>
+                <a class="dash-link" href="dashboard-analysis.html">Analysis</a>
+                <a class="dash-link" href="dashboard-history.html">History</a>
+                <a class="dash-link" href="dashboard-threats.html">Threats</a>
+                <a class="dash-link" href="dashboard-reports.html">Reports</a>
+                <a class="dash-link" href="dashboard-integrations.html">Integrations</a>
+                <a class="dash-link" href="dashboard-team.html">Team</a>
+                <a class="dash-link active" href="dashboard-plan.html">Plan & Billing</a>
+                <a class="dash-link" href="dashboard-settings.html">Settings</a>
+                <a class="dash-link" href="updates.html">Support</a>
+            </nav>
+        </aside>
+        <div>
+            <div class="dash-hero">
+                <h1 style="margin:0">Plan & Billing</h1>
+                <div class="subtitle">View plan limits and manage your subscription.</div>
+            </div>
+            <main class="dashboard-main" style="padding: 24px;">
+                <!-- Current Plan Overview -->
+                <div class="current-plan-section">
+                    <div class="plan-header">
+                        <div class="plan-info">
+                            <h2>Current Plan</h2>
+                            <div class="plan-badge pro">Pro Plan</div>
+                        </div>
+                        <div class="plan-actions">
+                            <button id="manageBilling" class="btn-secondary">Manage Billing</button>
+                            <button id="upgradePlan" class="btn-primary">Upgrade Plan</button>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-details-grid">
+                        <div class="plan-detail-card">
+                            <div class="detail-icon">💰</div>
+                            <div class="detail-content">
+                                <div class="detail-value">$23/month</div>
+                                <div class="detail-label">Current Price</div>
+                                <div class="detail-meta">Billed monthly • Next: Dec 15, 2024</div>
+                            </div>
+                        </div>
+                        
+                        <div class="plan-detail-card">
+                            <div class="detail-icon">📧</div>
+                            <div class="detail-content">
+                                <div class="detail-value">15,247 / 25,000</div>
+                                <div class="detail-label">Emails Analyzed</div>
+                                <div class="detail-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 61%;"></div>
+                                    </div>
+                                    <span class="progress-text">61% used</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="plan-detail-card">
+                            <div class="detail-icon">👥</div>
+                            <div class="detail-content">
+                                <div class="detail-value">8 / 15</div>
+                                <div class="detail-label">Team Members</div>
+                                <div class="detail-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 53%;"></div>
+                                    </div>
+                                    <span class="progress-text">53% used</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="plan-detail-card">
+                            <div class="detail-icon">🔗</div>
+                            <div class="detail-content">
+                                <div class="detail-value">12 / 20</div>
+                                <div class="detail-label">Integrations</div>
+                                <div class="detail-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 60%;"></div>
+                                    </div>
+                                    <span class="progress-text">60% used</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Usage Analytics -->
+                <div class="usage-analytics-section">
+                    <div class="analytics-header">
+                        <h2>Usage Analytics</h2>
+                        <div class="analytics-period">
+                            <select id="analyticsPeriod" class="period-select">
+                                <option value="week">This Week</option>
+                                <option value="month" selected>This Month</option>
+                                <option value="quarter">This Quarter</option>
+                                <option value="year">This Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-grid">
+                        <div class="analytics-chart-container">
+                            <h3>Email Analysis Trend</h3>
+                            <canvas id="usageChart" width="400" height="200"></canvas>
+                        </div>
+                        
+                        <div class="usage-breakdown">
+                            <h3>Usage Breakdown</h3>
+                            <div class="breakdown-items">
+                                <div class="breakdown-item">
+                                    <div class="breakdown-label">
+                                        <span class="breakdown-dot high"></span>
+                                        High Risk Emails
+                                    </div>
+                                    <div class="breakdown-value">2,341</div>
+                                    <div class="breakdown-percent">15.4%</div>
+                                </div>
+                                <div class="breakdown-item">
+                                    <div class="breakdown-label">
+                                        <span class="breakdown-dot medium"></span>
+                                        Medium Risk Emails
+                                    </div>
+                                    <div class="breakdown-value">4,567</div>
+                                    <div class="breakdown-percent">29.9%</div>
+                                </div>
+                                <div class="breakdown-item">
+                                    <div class="breakdown-label">
+                                        <span class="breakdown-dot low"></span>
+                                        Low Risk Emails
+                                    </div>
+                                    <div class="breakdown-value">8,339</div>
+                                    <div class="breakdown-percent">54.7%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="usage-forecast">
+                        <div class="forecast-card">
+                            <div class="forecast-icon">📈</div>
+                            <div class="forecast-content">
+                                <div class="forecast-title">Usage Forecast</div>
+                                <div class="forecast-text">Based on current trends, you'll use approximately <strong>22,500 emails</strong> this month (90% of limit)</div>
+                                <div class="forecast-recommendation">Consider upgrading to Enterprise for unlimited analysis</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plan Comparison -->
+                <div class="plan-comparison-section">
+                    <div class="comparison-header">
+                        <h2>Available Plans</h2>
+                        <div class="billing-toggle">
+                            <span class="toggle-label">Monthly</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="billingToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label">Annual <span class="discount-badge">Save 20%</span></span>
+                        </div>
+                    </div>
+                    
+                    <div class="plans-grid">
+                        <div class="plan-card">
+                            <div class="plan-name">Free</div>
+                            <div class="plan-price">
+                                <span class="price-amount">$0</span>
+                                <span class="price-period">/month</span>
+                            </div>
+                            <div class="plan-description">Perfect for trying out our service</div>
+                            
+                            <div class="plan-features">
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>1,000 emails/month</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>3 team members</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>5 integrations</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>Basic support</span>
+                                </div>
+                                <div class="feature-item disabled">
+                                    <span class="feature-icon">✗</span>
+                                    <span>Advanced analytics</span>
+                                </div>
+                                <div class="feature-item disabled">
+                                    <span class="feature-icon">✗</span>
+                                    <span>Custom integrations</span>
+                                </div>
+                            </div>
+                            
+                            <button class="plan-button secondary">Current Plan</button>
+                        </div>
+                        
+                        <div class="plan-card current">
+                            <div class="plan-badge-ribbon">Current Plan</div>
+                            <div class="plan-name">Pro</div>
+                            <div class="plan-price">
+                                <span class="price-amount monthly">$23</span>
+                                <span class="price-amount annual" style="display: none;">$18</span>
+                                <span class="price-period">/month</span>
+                            </div>
+                            <div class="plan-description">Best for growing teams</div>
+                            
+                            <div class="plan-features">
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>25,000 emails/month</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>15 team members</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>20 integrations</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>Priority support</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>Advanced analytics</span>
+                                </div>
+                                <div class="feature-item disabled">
+                                    <span class="feature-icon">✗</span>
+                                    <span>Custom integrations</span>
+                                </div>
+                            </div>
+                            
+                            <button class="plan-button primary">Manage Plan</button>
+                        </div>
+                        
+                        <div class="plan-card">
+                            <div class="plan-name">Enterprise</div>
+                            <div class="plan-price">
+                                <span class="price-amount monthly">$79</span>
+                                <span class="price-amount annual" style="display: none;">$63</span>
+                                <span class="price-period">/month</span>
+                            </div>
+                            <div class="plan-description">For large organizations</div>
+                            
+                            <div class="plan-features">
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>Unlimited emails</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>Unlimited team members</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>Unlimited integrations</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>24/7 dedicated support</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>Advanced analytics</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">✓</span>
+                                    <span>Custom integrations</span>
+                                </div>
+                            </div>
+                            
+                            <button class="plan-button primary">Upgrade Now</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing History -->
+                <div class="billing-history-section">
+                    <div class="history-header">
+                        <h2>Billing History</h2>
+                        <div class="history-actions">
+                            <button id="downloadInvoices" class="btn-secondary">Download All</button>
+                            <button id="updatePayment" class="btn-secondary">Update Payment</button>
+                        </div>
+                    </div>
+                    
+                    <div class="billing-table-container">
+                        <table class="billing-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Invoice</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Nov 15, 2024</td>
+                                    <td>Pro Plan - Monthly Subscription</td>
+                                    <td>$23.00</td>
+                                    <td><span class="status-badge paid">Paid</span></td>
+                                    <td><button class="invoice-btn">Download</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Oct 15, 2024</td>
+                                    <td>Pro Plan - Monthly Subscription</td>
+                                    <td>$23.00</td>
+                                    <td><span class="status-badge paid">Paid</span></td>
+                                    <td><button class="invoice-btn">Download</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Sep 15, 2024</td>
+                                    <td>Pro Plan - Monthly Subscription</td>
+                                    <td>$23.00</td>
+                                    <td><span class="status-badge paid">Paid</span></td>
+                                    <td><button class="invoice-btn">Download</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Aug 15, 2024</td>
+                                    <td>Pro Plan - Monthly Subscription</td>
+                                    <td>$23.00</td>
+                                    <td><span class="status-badge paid">Paid</span></td>
+                                    <td><button class="invoice-btn">Download</button></td>
+                                </tr>
+                                <tr>
+                                    <td>Jul 15, 2024</td>
+                                    <td>Pro Plan - Upgrade from Free</td>
+                                    <td>$23.00</td>
+                                    <td><span class="status-badge paid">Paid</span></td>
+                                    <td><button class="invoice-btn">Download</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Payment Methods -->
+                <div class="payment-methods-section">
+                    <div class="payment-header">
+                        <h2>Payment Methods</h2>
+                        <button id="addPaymentMethod" class="btn-primary">Add Payment Method</button>
+                    </div>
+                    
+                    <div class="payment-methods-grid">
+                        <div class="payment-method-card primary">
+                            <div class="payment-method-header">
+                                <div class="card-icon">💳</div>
+                                <div class="card-info">
+                                    <div class="card-type">Visa ending in 4242</div>
+                                    <div class="card-expiry">Expires 12/2027</div>
+                                </div>
+                                <div class="primary-badge">Primary</div>
+                            </div>
+                            <div class="payment-method-actions">
+                                <button class="action-btn">Edit</button>
+                                <button class="action-btn danger">Remove</button>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-method-card">
+                            <div class="payment-method-header">
+                                <div class="card-icon">💳</div>
+                                <div class="card-info">
+                                    <div class="card-type">Mastercard ending in 8888</div>
+                                    <div class="card-expiry">Expires 06/2026</div>
+                                </div>
+                            </div>
+                            <div class="payment-method-actions">
+                                <button class="action-btn">Set Primary</button>
+                                <button class="action-btn">Edit</button>
+                                <button class="action-btn danger">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing Settings -->
+                <div class="billing-settings-section">
+                    <div class="settings-header">
+                        <h2>Billing Settings</h2>
+                    </div>
+                    
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-title">Billing Email</div>
+                                <div class="setting-description">Where we send invoices and billing notifications</div>
+                            </div>
+                            <div class="setting-value">
+                                <input type="email" class="setting-input" value="billing@company.com">
+                                <button class="setting-btn">Update</button>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-title">Billing Address</div>
+                                <div class="setting-description">Used for tax calculations and invoices</div>
+                            </div>
+                            <div class="setting-value">
+                                <button class="setting-btn">Update Address</button>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-title">Tax Information</div>
+                                <div class="setting-description">VAT ID and other tax details</div>
+                            </div>
+                            <div class="setting-value">
+                                <button class="setting-btn">Manage Tax Info</button>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-title">Auto-renewal</div>
+                                <div class="setting-description">Automatically renew your subscription</div>
+                            </div>
+                            <div class="setting-value">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Plan Change Modal -->
+            <div id="planChangeModal" class="modal-overlay">
+                <div class="modal-content plan-change-modal">
+                    <div class="modal-header">
+                        <h2 id="planChangeTitle">Upgrade to Enterprise</h2>
+                        <button class="modal-close" onclick="closePlanChangeModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="plan-change-content">
+                            <div class="change-summary">
+                                <div class="current-plan">
+                                    <div class="plan-label">Current Plan</div>
+                                    <div class="plan-details">Pro Plan - $23/month</div>
+                                </div>
+                                <div class="change-arrow">→</div>
+                                <div class="new-plan">
+                                    <div class="plan-label">New Plan</div>
+                                    <div class="plan-details">Enterprise Plan - $79/month</div>
+                                </div>
+                            </div>
+                            
+                            <div class="change-benefits">
+                                <h3>What you'll get:</h3>
+                                <ul>
+                                    <li>Unlimited email analysis (currently limited to 25,000)</li>
+                                    <li>Unlimited team members (currently limited to 15)</li>
+                                    <li>Unlimited integrations (currently limited to 20)</li>
+                                    <li>24/7 dedicated support</li>
+                                    <li>Custom integrations and API access</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="billing-info">
+                                <div class="billing-item">
+                                    <span>Prorated charge today:</span>
+                                    <span class="billing-amount">$56.00</span>
+                                </div>
+                                <div class="billing-item">
+                                    <span>Next billing date:</span>
+                                    <span>Dec 15, 2024</span>
+                                </div>
+                                <div class="billing-item total">
+                                    <span>New monthly amount:</span>
+                                    <span class="billing-amount">$79.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-secondary" onclick="closePlanChangeModal()">Cancel</button>
+                        <button id="confirmPlanChange" class="btn-primary">Confirm Upgrade</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Payment Method Modal -->
+            <div id="paymentMethodModal" class="modal-overlay">
+                <div class="modal-content payment-method-modal">
+                    <div class="modal-header">
+                        <h2>Add Payment Method</h2>
+                        <button class="modal-close" onclick="closePaymentMethodModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="payment-form">
+                            <div class="form-group">
+                                <label>Card Number</label>
+                                <input type="text" id="cardNumber" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19">
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Expiry Date</label>
+                                    <input type="text" id="cardExpiry" class="form-input" placeholder="MM/YY" maxlength="5">
+                                </div>
+                                <div class="form-group">
+                                    <label>CVC</label>
+                                    <input type="text" id="cardCvc" class="form-input" placeholder="123" maxlength="4">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Cardholder Name</label>
+                                <input type="text" id="cardName" class="form-input" placeholder="John Doe">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="setPrimary">
+                                    <span>Set as primary payment method</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-secondary" onclick="closePaymentMethodModal()">Cancel</button>
+                        <button id="savePaymentMethod" class="btn-primary">Add Payment Method</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="firebase-config.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>
+

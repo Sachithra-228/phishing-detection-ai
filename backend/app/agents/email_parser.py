@@ -1,16 +1,11 @@
-
 from typing import Dict, Any, List, Optional
 import re
 import email
-import faiss
-import numpy as np
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import os
 
-# Global variables for spaCy (will be loaded lazily)
-nlp = None
-spacy = None
+# Simplified version without faiss and spacy dependencies
 
 def extract_headers(email_text: str) -> Dict[str, str]:
     """Extract email headers using Python's email module."""
@@ -72,34 +67,40 @@ def extract_attachments(email_text: str) -> List[Dict[str, str]]:
     return attachments
 
 def extract_entities(text: str) -> List[Dict[str, Any]]:
-    """Extract named entities using spaCy NER."""
-    global nlp, spacy
+    """Extract basic entities using regex patterns (simplified version)."""
+    entities = []
     
-    # Load spaCy lazily if not already loaded
-    if nlp is None:
-        try:
-            import spacy
-            nlp = spacy.load("en_core_web_sm")
-        except (OSError, ImportError, ModuleNotFoundError):
-            # Fallback if spaCy or model not available
-            return []
+    # Email patterns
+    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    emails = re.findall(email_pattern, text)
+    for email_addr in emails:
+        entities.append({
+            "type": "EMAIL",
+            "text": email_addr,
+            "confidence": 0.9
+        })
     
-    try:
-        doc = nlp(text)
-        entities = []
-        
-        for ent in doc.ents:
-            entities.append({
-                "type": ent.label_,
-                "text": ent.text,
-                "start": ent.start_char,
-                "end": ent.end_char,
-                "confidence": 0.8  # spaCy doesn't provide confidence by default
-            })
-        
-        return entities
-    except Exception:
-        return []
+    # Phone patterns
+    phone_pattern = r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b'
+    phones = re.findall(phone_pattern, text)
+    for phone in phones:
+        entities.append({
+            "type": "PHONE",
+            "text": phone,
+            "confidence": 0.8
+        })
+    
+    # Money patterns
+    money_pattern = r'\$\d+(?:,\d{3})*(?:\.\d{2})?'
+    money = re.findall(money_pattern, text)
+    for amount in money:
+        entities.append({
+            "type": "MONEY",
+            "text": amount,
+            "confidence": 0.8
+        })
+    
+    return entities
 
 def extract_body_text(email_text: str) -> str:
     """Extract clean body text from email."""
@@ -129,36 +130,6 @@ def extract_body_text(email_text: str) -> str:
         # Fallback: return original text
         return email_text
 
-def get_faiss_similarity(body_text: str) -> Optional[Dict[str, Any]]:
-    """Get similarity scores from FAISS index if available."""
-    index_path = "./data/phishing_corpus.index"
-    
-    if not os.path.exists(index_path):
-        return None
-    
-    try:
-        # Load FAISS index
-        index = faiss.read_index(index_path)
-        
-        # Simple TF-IDF vectorization for similarity
-        # In production, you'd want to use the same vectorizer as training
-        from sklearn.feature_extraction.text import TfidfVectorizer
-        vectorizer = TfidfVectorizer(max_features=1000, stop_words='english')
-        
-        # This is a simplified approach - in production you'd have pre-computed vectors
-        vectors = vectorizer.fit_transform([body_text]).toarray()
-        
-        # Search for similar documents
-        scores, indices = index.search(vectors.astype(np.float32), k=5)
-        
-        return {
-            "similarity_scores": scores[0].tolist(),
-            "top_matches": indices[0].tolist(),
-            "max_similarity": float(np.max(scores))
-        }
-    except Exception:
-        return None
-
 def parse_email(raw: str) -> Dict[str, Any]:
     """
     Parse email with comprehensive extraction of headers, URLs, entities, and attachments.
@@ -181,11 +152,8 @@ def parse_email(raw: str) -> Dict[str, Any]:
     # Extract attachments
     attachments = extract_attachments(raw)
     
-    # Extract named entities
+    # Extract named entities (simplified version)
     entities = extract_entities(body_text)
-    
-    # Get FAISS similarity if available
-    faiss_context = get_faiss_similarity(body_text)
     
     parsed = {
         "headers": headers,
@@ -193,7 +161,7 @@ def parse_email(raw: str) -> Dict[str, Any]:
         "urls": urls,
         "attachments": attachments,
         "entities": entities,
-        "context": faiss_context,
+        "context": None,  # No FAISS similarity in simplified version
         "metadata": {
             "has_html": "text/html" in raw.lower(),
             "is_multipart": "multipart" in raw.lower(),
